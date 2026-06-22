@@ -1,0 +1,6 @@
+.DS_Store
+*.log
+node_modules/
+exports/
+*.csv
+.claude/CLAUDE.local.md

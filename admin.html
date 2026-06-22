@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ПАЛАТА №6 · ординаторская</title>
+<style>
+  :root { --bg:#0e1512; --panel:#15201b; --line:#27362d; --txt:#dbeee2; --dim:#7f988a; --acc:#7fffb0; --warn:#ffce6b; --bad:#ff7b7b; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; }
+  header { position:sticky; top:0; background:var(--panel); border-bottom:1px solid var(--line); padding:14px 18px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; z-index:5; }
+  h1 { font-size:15px; margin:0; letter-spacing:1px; color:var(--acc); }
+  .stats { display:flex; gap:18px; flex-wrap:wrap; color:var(--dim); font-size:13px; }
+  .stats b { color:var(--txt); font-size:16px; }
+  .spacer { flex:1; }
+  button { font-family:inherit; font-size:13px; padding:7px 12px; background:#1d2b23; color:var(--txt); border:1px solid var(--line); border-radius:6px; cursor:pointer; }
+  button:hover { border-color:var(--acc); }
+  button.primary { background:var(--acc); color:#06140c; border-color:var(--acc); font-weight:700; }
+  button.danger { color:var(--bad); border-color:#3a2424; }
+  main { padding:18px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { position:sticky; top:62px; background:var(--bg); color:var(--dim); font-weight:600; text-transform:uppercase; font-size:11px; letter-spacing:.5px; }
+  tr:hover td { background:#13201a; }
+  .pill { display:inline-block; padding:1px 8px; border-radius:99px; font-size:11px; border:1px solid var(--line); }
+  .pill.self { color:var(--acc); border-color:#27402f; }
+  .pill.proxy { color:var(--warn); border-color:#403a27; }
+  .paid-yes { color:var(--acc); }
+  .paid-no { color:var(--bad); }
+  .toggle { cursor:pointer; user-select:none; }
+  .muted { color:var(--dim); }
+  .empty { text-align:center; padding:60px; color:var(--dim); }
+  .row-actions button { padding:3px 8px; font-size:12px; }
+  input.search { background:#0c130f; border:1px solid var(--line); color:var(--txt); border-radius:6px; padding:7px 10px; font-family:inherit; min-width:200px; }
+  .draft { opacity:.55; }
+  footer { padding:14px 18px; color:var(--dim); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏥 ПАЛАТА №6 · ОРДИНАТОРСКАЯ</h1>
+  <div class="stats" id="stats"></div>
+  <div class="spacer"></div>
+  <input class="search" id="search" placeholder="поиск по ФИО / контакту…" autocomplete="off">
+  <button class="primary" id="export">⬇ CSV</button>
+  <button id="refresh">↻ обновить</button>
+  <button class="danger" id="clear">очистить всё</button>
+</header>
+<main>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Время</th><th>ФИО</th><th>Кто</th><th>Конверт</th>
+        <th>Сумма</th><th>Оплачено</th><th>Диагноз</th><th>Контакт</th><th>Скин</th><th></th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="empty" id="empty" hidden>Пока никто не оформился. Очередь пуста, доктор скучает.</div>
+</main>
+<footer>
+  Данные лежат в <code>localStorage</code> этого браузера (ключ <code>palata6_registrations</code>).
+  «Оплачено» переключаешь руками, когда конверт реально у главбуха. Перед уборкой квартиры — жми «⬇ CSV».
+</footer>
+
+<script src="shared.js"></script>
+<script>
+  var esc = Palata.util.esc, fmt = Palata.util.formatTs;
+  var rowsEl = document.getElementById('rows');
+  var emptyEl = document.getElementById('empty');
+  var statsEl = document.getElementById('stats');
+  var searchEl = document.getElementById('search');
+
+  function money(v) { return (v === null || v === undefined || v === '') ? '<span class="muted">—</span>' : esc(v) + ' ₽'; }
+
+  function render() {
+    var q = searchEl.value.trim().toLowerCase();
+    var all = Palata.Store.all();
+    var list = !q ? all : all.filter(function (r) {
+      return (r.fio + ' ' + r.contact + ' ' + r.proxyFor).toLowerCase().indexOf(q) >= 0;
+    });
+
+    // Статистика — по всем, не по отфильтрованным.
+    var paidCount = 0, sum = 0, doneCount = 0;
+    all.forEach(function (r) {
+      if (r.paid) paidCount++;
+      if (r.done) doneCount++;
+      var n = parseFloat(r.amount);
+      if (r.paid && !isNaN(n)) sum += n;
+    });
+    statsEl.innerHTML =
+      '<span>записей <b>' + all.length + '</b></span>' +
+      '<span>дошли до конца <b>' + doneCount + '</b></span>' +
+      '<span>оплатили <b>' + paidCount + '</b></span>' +
+      '<span>касса <b>' + sum.toLocaleString('ru-RU') + ' ₽</b></span>';
+
+    emptyEl.hidden = list.length > 0;
+    rowsEl.innerHTML = list.map(function (r, i) {
+      var who = r.attendee === 'proxy'
+        ? '<span class="pill proxy" title="' + esc(r.proxyFor) + '">доверенное</span>'
+        : (r.attendee === 'self' ? '<span class="pill self">лично</span>' : '<span class="muted">—</span>');
+      return '<tr class="' + (r.done ? '' : 'draft') + '" data-id="' + esc(r.id) + '">' +
+        '<td class="muted">' + (i + 1) + '</td>' +
+        '<td class="muted">' + esc(fmt(r.ts)) + '</td>' +
+        '<td><b>' + (esc(r.fio) || '<span class="muted">без имени</span>') + '</b>' +
+          (r.attendee === 'proxy' && r.proxyFor ? '<br><span class="muted">от: ' + esc(r.proxyFor) + '</span>' : '') +
+          (r.done ? '' : '<br><span class="muted">⚠ не дошёл до конца</span>') + '</td>' +
+        '<td>' + who + '</td>' +
+        '<td>' + (r.broughtEnvelope ? '✅' : '<span class="muted">—</span>') + '</td>' +
+        '<td>' + money(r.amount) + '</td>' +
+        '<td class="toggle ' + (r.paid ? 'paid-yes' : 'paid-no') + '" data-act="paid" data-id="' + esc(r.id) + '">' +
+          (r.paid ? '✔ да' : '✘ нет') + '</td>' +
+        '<td class="muted">' + (esc(r.diagnosis) || '—') + '</td>' +
+        '<td class="muted">' + (esc(r.contact) || '—') + '</td>' +
+        '<td class="muted">' + esc(r.skin) + '</td>' +
+        '<td class="row-actions"><button data-act="del" data-id="' + esc(r.id) + '">🗑</button></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  rowsEl.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-act]');
+    if (!t) return;
+    var id = t.getAttribute('data-id');
+    var act = t.getAttribute('data-act');
+    if (act === 'paid') {
+      var rec = Palata.Store.get(id);
+      if (rec) Palata.Store.update(id, { paid: !rec.paid });
+      render();
+    } else if (act === 'del') {
+      if (confirm('Удалить запись? Это насовсем.')) { Palata.Store.remove(id); render(); }
+    }
+  });
+
+  document.getElementById('export').addEventListener('click', function () { Palata.Store.downloadCSV(); });
+  document.getElementById('refresh').addEventListener('click', render);
+  searchEl.addEventListener('input', render);
+  document.getElementById('clear').addEventListener('click', function () {
+    if (confirm('Стереть ВСЕ записи? Сначала точно скачал CSV?')) {
+      if (confirm('Точно-точно? Назад дороги нет.')) { Palata.Store.clear(); render(); }
+    }
+  });
+
+  // Подхватываем изменения из других вкладок/скинов в реальном времени.
+  window.addEventListener('storage', function (e) { if (e.key === 'palata6_registrations') render(); });
+  render();
+</script>
+</body>
+</html>

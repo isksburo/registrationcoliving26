@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ПАЛАТА №6 · приёмное отделение</title>
+<style>
+  body { margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:#0e1512; color:#dbeee2; font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; gap:26px; padding:30px; }
+  h1 { letter-spacing:2px; color:#7fffb0; text-align:center; margin:0; }
+  .sub { color:#7f988a; text-align:center; max-width:520px; }
+  .cards { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
+  a.card { display:block; width:280px; padding:24px; border:1px solid #27362d; border-radius:14px; background:#15201b;
+    color:inherit; text-decoration:none; transition:.15s; }
+  a.card:hover { border-color:#7fffb0; transform:translateY(-3px); }
+  a.card h2 { margin:0 0 8px; font-size:18px; }
+  a.card p { margin:0; color:#7f988a; font-size:13px; }
+  .badge { font-size:11px; color:#06140c; background:#7fffb0; padding:2px 8px; border-radius:99px; font-weight:700; }
+  footer { color:#3f534a; font-size:12px; text-align:center; }
+  #logo { cursor:default; user-select:none; }
+</style>
+</head>
+<body>
+  <h1 id="logo">🏥 ПАЛАТА №6</h1>
+  <div class="sub">Приёмное отделение. Выберите бланк оформления пациента. Перед сменой гостя жмите этот экран как точку сброса.</div>
+  <div class="cards">
+    <a class="card" href="registratura.html">
+      <h2>📋 Регистратура</h2>
+      <p>Советская казёнщина: бланк «по форме №6», печати, окно «ОБЕД», очереди.</p>
+    </a>
+    <a class="card" href="inyerface.html">
+      <h2>🩺 Кабинет диагностики</h2>
+      <p>Анти-UX: убегающие кнопки, слайдеры вместо дат, врущие подписи. Трекпад страдает.</p>
+    </a>
+  </div>
+  <footer><span id="logo2">ординаторская</span> · v0.6</footer>
+
+  <script>
+    // Тайный вход в админку: 6 кликов по заголовку (палата №6, вестимо).
+    var clicks = 0, timer = null;
+    function arm(el) {
+      el.addEventListener('click', function () {
+        clicks++;
+        clearTimeout(timer);
+        timer = setTimeout(function () { clicks = 0; }, 1200);
+        if (clicks >= 6) { location.href = 'admin.html'; }
+      });
+    }
+    arm(document.getElementById('logo'));
+    arm(document.getElementById('logo2'));
+  </script>
+</body>
+</html>

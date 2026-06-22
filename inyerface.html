@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кабинет диагностики · ПАЛАТА №6</title>
+<style>
+  /* ====== НАРОЧИТО УРОДЛИВЫЙ АНТИ-UX ====== */
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; min-height:100%; }
+  body {
+    background:
+      repeating-linear-gradient(45deg, #d9ffd2 0 18px, #cfeecb 18px 36px),
+      #d9ffd2;
+    color:#1c2b1c;
+    font-family: "Comic Sans MS", "Comic Sans", "Times New Roman", cursive, serif;
+    overflow-x:hidden;
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 14px auto 120px;
+    background: #fffce9;
+    border: 6px dashed #7a00b3;
+    padding: 18px 22px 30px;
+    position:relative;
+  }
+  h1.kabinet {
+    font-family: "Impact","Arial Black", sans-serif;
+    color:#b30059;
+    background:#aef0ff;
+    text-align:right;
+    letter-spacing:-1px;
+    padding:6px 10px;
+    margin:0 0 4px;
+    transform: skewX(-7deg);
+    text-shadow: 2px 2px 0 #ffff00;
+    font-size: 30px;
+  }
+  .stamp {
+    display:inline-block;
+    transform: rotate(-9deg);
+    border:3px double #b00;
+    color:#b00;
+    padding:2px 8px;
+    font-weight:bold;
+    font-size:12px;
+    opacity:.75;
+    margin: 4px 0 14px;
+    font-family: "Courier New", monospace;
+  }
+  .step { display:none; animation: appear .2s; }
+  .step.active { display:block; }
+  @keyframes appear { from {opacity:.3} to {opacity:1} }
+
+  .lbl { display:block; margin:14px 0 3px; font-size:13px; color:#444; }
+  .lbl b { color:#7a00b3; }
+
+  input[type=text] {
+    font-family:"Comic Sans MS", cursive;
+    font-size:16px;
+    padding:7px;
+    border:2px inset #b3b3ff;
+    background:#fffff0;
+    width:100%;
+  }
+  input[type=text]:focus { outline:3px solid #ff00aa; background:#ffe9f7; }
+
+  /* ВРУЩИЕ КНОПКИ: зелёная крупная = ОТМЕНА/НАЗАД, серая мелкая = ДАЛЕЕ */
+  .btn-cancel {
+    display:inline-block;
+    background:#1faa3f;
+    color:#fff;
+    border:none;
+    font-size:21px;
+    font-weight:bold;
+    padding:16px 38px;
+    margin:8px 8px 0 0;
+    border-radius:10px;
+    cursor:pointer;
+    box-shadow:0 5px 0 #117a2a;
+    font-family:"Arial Black",sans-serif;
+  }
+  .btn-cancel:active { transform:translateY(4px); box-shadow:0 1px 0 #117a2a; }
+  .btn-next {
+    display:inline-block;
+    background:#cfcfcf;
+    color:#888;
+    border:1px solid #aaa;
+    font-size:10px;
+    padding:3px 6px;
+    margin:8px 0 0 0;
+    border-radius:2px;
+    cursor:pointer;
+    font-family: monospace;
+    vertical-align:bottom;
+  }
+  .btn-next:hover { background:#bdbdbd; }
+
+  .hint { font-size:11px; color:#9a9a9a; margin-top:6px; font-style:italic; }
+  .progress { font-family:monospace; font-size:11px; color:#aaa; text-align:right; }
+
+  /* слайдеры */
+  .slrow { display:flex; align-items:center; gap:10px; margin:6px 0; }
+  .slrow span.tag { width:64px; font-size:12px; color:#555; }
+  input[type=range] { flex:1; accent-color:#ff00aa; height:26px; }
+  .slval {
+    min-width:54px; text-align:center; font-family:"Courier New",monospace;
+    font-weight:bold; font-size:18px; color:#b30059; background:#fff; border:1px solid #ccc; padding:2px 4px;
+  }
+  .vert-wrap { display:flex; align-items:center; gap:18px; margin-top:10px; }
+  .vert {
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width:34px; height:200px; accent-color:#1faa3f;
+  }
+  .amount-big { font-size:34px; color:#117a2a; font-family:"Courier New",monospace; font-weight:bold; }
+
+  /* капча / симптомы сетки */
+  .grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:8px; max-width:420px; }
+  .cell {
+    font-size:30px; text-align:center; padding:10px 0; cursor:pointer;
+    background:#eee; border:3px solid #ccc; user-select:none; border-radius:6px;
+  }
+  .cell.sel { border-color:#ff00aa; background:#ffe1f3; box-shadow: inset 0 0 0 2px #ff00aa; }
+
+  .symptoms label {
+    display:block; margin:3px 0; font-size:14px; cursor:pointer; padding:4px 6px; border:1px dotted #bbb; background:#fff;
+  }
+  .symptoms input { margin-right:8px; vertical-align:middle; }
+
+  select {
+    font-family:"Comic Sans MS", cursive; font-size:15px; padding:6px; border:2px ridge #c0a0ff; background:#fdfdff; width:100%;
+  }
+
+  .consent {
+    background:#ffffcc; border:2px solid #cc0; padding:10px; margin-top:12px; font-size:14px;
+  }
+  .consent label { cursor:pointer; }
+
+  /* cookie / ГОСТ баннер */
+  #gost {
+    position:fixed; left:50%; bottom:0; transform:translateX(-50%);
+    background:#1a1a1a; color:#0f0; border:3px solid #0f0; padding:14px;
+    font-family:monospace; font-size:13px; z-index:5000; max-width:540px; width:94%;
+    box-shadow:0 0 30px #000;
+  }
+  #gost b { color:#ff0; }
+  #gostClose {
+    position:absolute; cursor:pointer; background:#400; color:#f55; border:1px solid #f55;
+    width:26px; height:26px; line-height:22px; text-align:center; font-weight:bold;
+    top:6px; right:6px; border-radius:50%;
+  }
+  #gostAccept { margin-top:10px; background:#222; color:#777; border:1px solid #444; font-size:10px; padding:3px 6px; cursor:pointer; font-family:monospace; }
+
+  /* убегающая кнопка финала */
+  #finalZone { position:relative; min-height:160px; margin-top:14px; border:1px dashed #ccc; }
+  #btnHospital {
+    position:absolute; left:20px; top:60px;
+    background:#b30059; color:#fff; border:none; font-size:22px; font-weight:bold;
+    padding:18px 30px; border-radius:12px; cursor:pointer; box-shadow:0 6px 0 #7a003c;
+    font-family:"Arial Black",sans-serif; transition: top .08s, left .08s;
+  }
+  #btnHospital.calm { box-shadow:0 6px 0 #7a003c, 0 0 24px #ff00aa; }
+
+  .err { color:#b00; font-size:12px; font-weight:bold; }
+  .tiny { font-size:10px; color:#bbb; }
+
+  /* финал */
+  #final {
+    text-align:center;
+  }
+  .verdict {
+    font-family:"Impact",sans-serif; font-size:40px; color:#b30059; background:#aef0ff;
+    padding:14px; transform:skewX(-5deg); margin:18px 0;
+    text-shadow:3px 3px 0 #ffff00;
+  }
+  .palata-no { font-size:70px; color:#117a2a; font-family:"Courier New",monospace; }
+  .exit-btn {
+    margin-top:24px; background:#1faa3f; color:#fff; border:none; font-size:22px; font-weight:bold;
+    padding:16px 34px; border-radius:12px; cursor:pointer; box-shadow:0 5px 0 #117a2a; font-family:"Arial Black",sans-serif;
+  }
+
+  .blink { animation: bl 1s steps(2) infinite; }
+  @keyframes bl { 50% { opacity:0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="kabinet">🩺 КАБИНЕТ&nbsp;ДИАГНОСТИКИ</h1>
+  <div class="stamp">ФОРМА №6-Ψ · СТРОГО ДОБРОВОЛЬНО</div>
+  <div class="progress" id="prog">шаг ?/? · бланк не сохранён (наверное)</div>
+
+  <!-- ШАГ 1: ФИО (лаг-ввод) -->
+  <div class="step active" id="s1" data-i="1">
+    <div class="lbl">Впишите <b>фамилию, имя и отчество пациента</b> печатными буквами, разборчиво, без помарок:</div>
+    <input type="text" id="fio" autocomplete="off" placeholder="напр. Иванов Иван Иваныч">
+    <div class="hint">Поле работает по протоколу ГОСТ-23. Символы могут появляться с задержкой. Это нормально. Не нажимайте ничего лишнего.</div>
+    <div class="err" id="e1"></div>
+    <div>
+      <button class="btn-cancel" id="b1cancel">ОТМЕНИТЬ И ВЫЙТИ</button>
+      <button class="btn-next" id="b1next">пропустить →</button>
+    </div>
+    <div class="hint">↑ зелёная — для тех, кто передумал лечиться. серая мелкая — продолжить оформление.</div>
+  </div>
+
+  <!-- ШАГ 2: лично / по доверенности -->
+  <div class="step" id="s2" data-i="2">
+    <div class="lbl">Кто, собственно, <b>стоит перед окном</b>?</div>
+    <label><input type="radio" name="att" value="self"> Я и есть пациент (лично, добровольно, по зову сердца)</label>
+    <label><input type="radio" name="att" value="proxy"> Я привёл(ла) другого. У меня доверенность (устная, мысленная или настоящая)</label>
+    <div id="proxyBox" style="display:none">
+      <div class="lbl">От кого <b>доверенность / кого сдаём</b>:</div>
+      <input type="text" id="proxyFor" autocomplete="off" placeholder="ФИО или степень родства">
+    </div>
+    <div class="err" id="e2"></div>
+    <div>
+      <button class="btn-cancel" id="b2back">◀ ВЕРНУТЬСЯ К ФИО</button>
+      <button class="btn-next" id="b2next">далее, нехотя →</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 3: дата рождения тремя слайдерами -->
+  <div class="step" id="s3" data-i="3">
+    <div class="lbl">Укажите <b>дату рождения</b> при помощи высокоточных регуляторов (наведите и тащите):</div>
+    <div class="slrow"><span class="tag">День</span><input type="range" id="sd" min="1" max="31" value="1"><span class="slval" id="sdv">1</span></div>
+    <div class="slrow"><span class="tag">Месяц</span><input type="range" id="sm" min="1" max="12" value="1"><span class="slval" id="smv">1</span></div>
+    <div class="slrow"><span class="tag">Год</span><input type="range" id="sy" min="1920" max="2010" value="1920"><span class="slval" id="syv">1920</span></div>
+    <div class="hint">Регуляторы чувствительны к нажиму. Точное попадание — признак здоровой психики.</div>
+    <div class="lbl">Собранная дата: <b><span id="dateOut">01.01.1920</span></b></div>
+    <div>
+      <button class="btn-cancel" id="b3back">◀ НАЗАД (безопасно)</button>
+      <button class="btn-next" id="b3next">зафиксировать дату →</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 4: конверт + сумма вертикальным слайдером -->
+  <div class="step" id="s4" data-i="4">
+    <div class="lbl"><b>Вы принесли конверт?</b> (благодарность приёмному отделению, исключительно по желанию)</div>
+    <label><input type="radio" name="env" value="yes"> Да, конверт при мне</label>
+    <label><input type="radio" name="env" value="no"> Нет, я бессовестный</label>
+
+    <div id="amountBox" style="display:none">
+      <div class="lbl">Заявленная <b>сумма благодарности</b>. Выставьте вертикальным регулятором (шаг 137 ₽, как завещал главбух):</div>
+      <div class="vert-wrap">
+        <input type="range" class="vert" id="amt" min="0" max="20" value="0">
+        <div>
+          <div class="amount-big"><span id="amtv">0</span> ₽</div>
+          <div class="tiny">тащите ползунок ВВЕРХ. да, он вертикальный. да, это специально.</div>
+        </div>
+      </div>
+    </div>
+    <div class="err" id="e4"></div>
+    <div>
+      <button class="btn-cancel" id="b4back">◀ ОТКАЗАТЬСЯ ОТ ВСЕГО</button>
+      <button class="btn-next" id="b4next">принять к сведению →</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 5: диагноз select + симптомы исчезающие -->
+  <div class="step" id="s5" data-i="5">
+    <div class="lbl">Выберите <b>предварительный диагноз</b> из выпадающего списка (порядок утверждён комиссией):</div>
+    <select id="diag">
+      <option value="">— ткните сюда —</option>
+      <option>Острый дефицит конвертов</option>
+      <option>Хроническая нормальность (опасно)</option>
+      <option>Синдром трекпада</option>
+      <option>Вялотекущая адекватность</option>
+      <option>Гиперактивность ползунков</option>
+      <option>Маниакальная вежливость</option>
+      <option>Затяжное чувство юмора</option>
+    </select>
+
+    <div class="lbl">Отметьте <b>симптомы</b>. ВНИМАНИЕ: симптомы нестабильны и сами снимаются. Успевайте.</div>
+    <div class="symptoms" id="sympBox">
+      <label><input type="checkbox" value="Слышит голос регистратора"> Слышит голос регистратора</label>
+      <label><input type="checkbox" value="Боится вертикальных слайдеров"> Боится вертикальных слайдеров</label>
+      <label><input type="checkbox" value="Считает себя нормальным"> Считает себя нормальным</label>
+      <label><input type="checkbox" value="Принёс конверт без напоминания"> Принёс конверт без напоминания</label>
+      <label><input type="checkbox" value="Читает мелкий шрифт"> Читает мелкий шрифт</label>
+    </div>
+    <div class="hint">Нужно отметить хотя бы один симптом (любой). Они исчезают раз в ~2.5с — ловите момент.</div>
+    <div class="err" id="e5"></div>
+    <div>
+      <button class="btn-cancel" id="b5back">◀ Я ЗДОРОВ, ВЫПУСТИТЕ</button>
+      <button class="btn-next" id="b5next">диагноз верен →</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 6: капча микробы -->
+  <div class="step" id="s6" data-i="6">
+    <div class="lbl">Подтвердите, что вы не санитарка-робот. <b>Выберите ВСЕ клетки с микробами (🦠)</b>:</div>
+    <div class="grid" id="captcha"></div>
+    <div class="hint">Тыкните только микробов. Лишнее снимет проверку. Промахи лечатся повтором.</div>
+    <div class="err" id="e6"></div>
+    <div>
+      <button class="btn-cancel" id="b6back">◀ ОБЕЗЗАРАЗИТЬ И ВЫЙТИ</button>
+      <button class="btn-next" id="b6next">я человек, проверьте →</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 7: согласие двойное отрицание + контакт + финал -->
+  <div class="step" id="s7" data-i="7">
+    <div class="lbl">Оставьте <b>контакт</b> (телефон/телеграм), необязательно, но санитары любят перезванивать:</div>
+    <input type="text" id="contact" autocomplete="off" placeholder="@username или +7…">
+
+    <div class="consent">
+      <label>
+        <input type="checkbox" id="consent">
+        Я <b>НЕ</b> против того, чтобы <b>не</b> отказываться от госпитализации, и <b>не</b> подтверждаю, что я <b>не</b> согласен(на). Поставьте галочку, если всё ясно.
+      </label>
+      <div class="err" id="e7"></div>
+    </div>
+
+    <div class="lbl">Чтобы завершить оформление, <b>нажмите кнопку «Госпитализировать»</b>. Она немного нервная.</div>
+    <div id="finalZone">
+      <button id="btnHospital">ГОСПИТАЛИЗИРОВАТЬ</button>
+    </div>
+    <div class="hint" id="finalHint">Кнопка убегает от курсора. После нескольких попыток она устанет и замрёт. Либо нажмите запасную ссылку ниже.</div>
+    <div style="margin-top:10px">
+      <a href="#" id="forceSubmit" class="tiny" style="color:#ccd;">(служебный вход: оформить без беготни)</a>
+    </div>
+    <div>
+      <button class="btn-cancel" id="b7back">◀ ПЕРЕДУМАТЬ ОКОНЧАТЕЛЬНО</button>
+    </div>
+  </div>
+
+  <!-- ФИНАЛ -->
+  <div class="step" id="sf">
+    <div id="final">
+      <div class="verdict blink">ВЫ ГОСПИТАЛИЗИРОВАНЫ</div>
+      <div>Поздравляем. Комиссия рассмотрела бланк и вынесла вердикт.</div>
+      <div class="lbl" style="text-align:center">Ваша палата:</div>
+      <div class="palata-no" id="palataNo">№6</div>
+      <div class="lbl" style="text-align:center">Диагноз в карте: <b><span id="finalDiag">—</span></b></div>
+      <div class="lbl" style="text-align:center">Пациент: <b><span id="finalFio">—</span></b></div>
+      <div class="tiny">Бланк сохранён в архиве регистратуры. Сопротивление бесполезно и запротоколировано.</div>
+      <button class="exit-btn" id="exitBtn">🚪 Выйти / оформить следующего</button>
+    </div>
+  </div>
+</div>
+
+<!-- ГОСТ / cookie баннер -->
+<div id="gost">
+  <b>⚠ УВЕДОМЛЕНИЕ ПО ГОСТ Р 6.66-202Ψ</b><br>
+  Продолжая дышать в этом кабинете, вы соглашаетесь на обработку ваших флюидов, мыслей и cookie-печенек.
+  Закрытие сего окна означает согласие. Несогласие также означает согласие.
+  <div id="gostClose">×</div>
+  <button id="gostAccept">не соглашаться (т.е. согласиться)</button>
+</div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  // ---- киоск ----
+  Palata.Kiosk.init({ lockContextMenu:true, idleResetMs:90000, home:'index.html' });
+
+  var esc = Palata.util.esc;
+  var recId = null;          // id записи в Store
+  var TOTAL = 7;
+
+  // ---------- ГОСТ-баннер: прыгает/растёт при попытке закрыть, но закрывается ----------
+  (function(){
+    var gost = document.getElementById('gost');
+    var x = document.getElementById('gostClose');
+    var acc = document.getElementById('gostAccept');
+    var dodges = 0;
+    function dodge(){
+      dodges++;
+      if (dodges <= 3){
+        // прыгает крестик в новое место внутри баннера + баннер чуть растёт
+        var maxX = gost.clientWidth - 30;
+        var maxY = gost.clientHeight - 30;
+        x.style.position='absolute';
+        x.style.left = Palata.Theater.rnd(2, Math.max(2,maxX)) + 'px';
+        x.style.top  = Palata.Theater.rnd(2, Math.max(2,maxY)) + 'px';
+        x.style.right='auto';
+        gost.style.fontSize = (13 + dodges*2) + 'px';
+        return;
+      }
+      kill();
+    }
+    function kill(){ gost.parentNode && gost.parentNode.removeChild(gost); }
+    // mouseover уводит крестик (мучение для трекпада), но 4-й заход / клик закрывает
+    x.addEventListener('mouseover', function(e){ if(dodges<3) dodge(); });
+    x.addEventListener('click', function(e){ e.preventDefault(); dodge(); });
+    acc.addEventListener('click', kill); // гарантированный выход
+  })();
+
+  // ---------- навигация по шагам ----------
+  var steps = ['s1','s2','s3','s4','s5','s6','s7'];
+  var cur = 0;
+  function show(i){
+    document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
+    var id = (i>=steps.length) ? 'sf' : steps[i];
+    document.getElementById(id).classList.add('active');
+    cur = i;
+    var p = document.getElementById('prog');
+    if (id==='sf') p.textContent = 'оформление завершено · бланк в архиве';
+    else p.textContent = 'шаг '+(i+1)+'/'+TOTAL+' · бланк #'+(recId?recId.slice(-5):'—')+' сохраняется молча';
+    window.scrollTo(0,0);
+  }
+
+  // ---------- ШАГ 1: ФИО с лагом ----------
+  var fio = document.getElementById('fio');
+  Palata.Theater.lagInput(fio, 230); // мучительный ввод
+  document.getElementById('b1cancel').addEventListener('click', function(){
+    // ВРУЩАЯ зелёная: на самом деле просто моргнём и подтолкнём к серой кнопке
+    Palata.Theater.flicker(document.getElementById('e1'),500);
+    document.getElementById('e1').textContent = 'Отмена временно недоступна. Зелёное здесь врёт. Жмите серую.';
+  });
+  document.getElementById('b1next').addEventListener('click', function(){
+    var v = fio.value.trim();
+    if (v.length < 3){ document.getElementById('e1').textContent='Слишком коротко для человека. Допишите.'; return; }
+    document.getElementById('e1').textContent='';
+    // === СОЗДАЁМ ЗАПИСЬ СРАЗУ, как только знаем ФИО ===
+    if (!recId){ recId = Palata.Store.create({ skin:'inyerface' }); }
+    Palata.Store.update(recId, { fio: v });
+    show(1);
+  });
+
+  // ---------- ШАГ 2: attendee ----------
+  var proxyBox = document.getElementById('proxyBox');
+  document.querySelectorAll('input[name=att]').forEach(function(r){
+    r.addEventListener('change', function(){
+      proxyBox.style.display = (this.value==='proxy') ? 'block':'none';
+    });
+  });
+  document.getElementById('b2back').addEventListener('click', function(){ show(0); }); // тут «назад» честно назад
+  document.getElementById('b2next').addEventListener('click', function(){
+    var sel = document.querySelector('input[name=att]:checked');
+    if (!sel){ document.getElementById('e2').textContent='Кто-то же стоит у окна. Выберите.'; return; }
+    var attendee = sel.value;
+    var proxyFor = '';
+    if (attendee==='proxy'){
+      proxyFor = document.getElementById('proxyFor').value.trim();
+      if (!proxyFor){ document.getElementById('e2').textContent='Доверенность от кого? Впишите.'; return; }
+    }
+    document.getElementById('e2').textContent='';
+    Palata.Store.update(recId, { attendee: attendee, proxyFor: proxyFor });
+    show(2);
+  });
+
+  // ---------- ШАГ 3: дата рождения слайдерами ----------
+  var sd=document.getElementById('sd'), sm=document.getElementById('sm'), sy=document.getElementById('sy');
+  function pad(n){ return n<10?'0'+n:''+n; }
+  function syncDate(){
+    document.getElementById('sdv').textContent = sd.value;
+    document.getElementById('smv').textContent = sm.value;
+    document.getElementById('syv').textContent = sy.value;
+    var out = pad(+sd.value)+'.'+pad(+sm.value)+'.'+sy.value;
+    document.getElementById('dateOut').textContent = out;
+    return out;
+  }
+  [sd,sm,sy].forEach(function(s){ s.addEventListener('input', syncDate); });
+  syncDate();
+  document.getElementById('b3back').addEventListener('click', function(){ show(1); });
+  document.getElementById('b3next').addEventListener('click', function(){
+    Palata.Store.update(recId, { birthDate: syncDate() });
+    show(3);
+  });
+
+  // ---------- ШАГ 4: конверт + сумма (вертикальный слайдер, шаг 137) ----------
+  var amountBox = document.getElementById('amountBox');
+  var STEP = 137;
+  var amt = document.getElementById('amt');
+  function syncAmt(){ document.getElementById('amtv').textContent = (+amt.value * STEP); }
+  amt.addEventListener('input', syncAmt);
+  syncAmt();
+  document.querySelectorAll('input[name=env]').forEach(function(r){
+    r.addEventListener('change', function(){
+      amountBox.style.display = (this.value==='yes') ? 'block':'none';
+    });
+  });
+  document.getElementById('b4back').addEventListener('click', function(){ show(2); });
+  document.getElementById('b4next').addEventListener('click', function(){
+    var sel = document.querySelector('input[name=env]:checked');
+    if (!sel){ document.getElementById('e4').textContent='Конверт — да или нет. Совесть подождёт.'; return; }
+    var brought = (sel.value==='yes');
+    var amount = brought ? (+amt.value * STEP) : 0;
+    document.getElementById('e4').textContent='';
+    Palata.Store.update(recId, { broughtEnvelope: brought, amount: amount });
+    show(4);
+  });
+
+  // ---------- ШАГ 5: диагноз + исчезающие симптомы ----------
+  var sympTimer = null;
+  function startSymptomDecay(){
+    stopSymptomDecay();
+    sympTimer = setInterval(function(){
+      var boxes = Array.prototype.slice.call(document.querySelectorAll('#sympBox input:checked'));
+      if (boxes.length){
+        // снимаем один случайный отмеченный — "симптом исчез"
+        var victim = boxes[Palata.Theater.rnd(0, boxes.length-1)];
+        victim.checked = false;
+        Palata.Theater.flicker(victim.parentNode, 300);
+      }
+    }, 2500);
+  }
+  function stopSymptomDecay(){ if(sympTimer){ clearInterval(sympTimer); sympTimer=null; } }
+  document.getElementById('b5back').addEventListener('click', function(){ stopSymptomDecay(); show(3); });
+  document.getElementById('b5next').addEventListener('click', function(){
+    var diag = document.getElementById('diag').value;
+    if (!diag){ document.getElementById('e5').textContent='Без диагноза не лечим. Выберите из списка.'; return; }
+    var checked = Array.prototype.slice.call(document.querySelectorAll('#sympBox input:checked')).map(function(c){return c.value;});
+    if (!checked.length){ document.getElementById('e5').textContent='Хоть один симптом поймайте! Они шустрые.'; return; }
+    document.getElementById('e5').textContent='';
+    stopSymptomDecay();
+    Palata.Store.update(recId, { diagnosis: diag, symptoms: checked.join(', ') });
+    show(5);
+  });
+
+  // ---------- ШАГ 6: капча микробы ----------
+  var DECOYS = ['🧫','🧪','🩺','💊','🦷','🧴','🩹','🌡️','🧬','🩻'];
+  var captchaState = []; // {el, isGerm}
+  function buildCaptcha(){
+    var grid = document.getElementById('captcha');
+    grid.innerHTML='';
+    captchaState=[];
+    var n=16, germs=5;
+    var cells=[];
+    for (var i=0;i<n;i++) cells.push(i<germs);
+    // перемешать
+    for (var j=cells.length-1;j>0;j--){ var k=Palata.Theater.rnd(0,j); var t=cells[j]; cells[j]=cells[k]; cells[k]=t; }
+    cells.forEach(function(isGerm){
+      var c=document.createElement('div');
+      c.className='cell';
+      c.textContent = isGerm ? '🦠' : DECOYS[Palata.Theater.rnd(0,DECOYS.length-1)];
+      var rec={el:c,isGerm:isGerm,sel:false};
+      c.addEventListener('click', function(){
+        rec.sel=!rec.sel;
+        c.classList.toggle('sel', rec.sel);
+      });
+      grid.appendChild(c);
+      captchaState.push(rec);
+    });
+  }
+  buildCaptcha();
+  document.getElementById('b6back').addEventListener('click', function(){ show(4); });
+  document.getElementById('b6next').addEventListener('click', function(){
+    var ok = captchaState.every(function(r){ return r.sel===r.isGerm; });
+    if (!ok){
+      document.getElementById('e6').textContent='Не все микробы пойманы (или поймано лишнее). Дезинфицируем заново.';
+      buildCaptcha();
+      return;
+    }
+    document.getElementById('e6').textContent='';
+    show(6);
+  });
+
+  // ---------- ШАГ 7: согласие + убегающая кнопка ----------
+  document.getElementById('b7back').addEventListener('click', function(){ show(5); });
+
+  var finalZone = document.getElementById('finalZone');
+  var btn = document.getElementById('btnHospital');
+  var dodgeCount = 0;
+  var calmed = false;
+  var firstMoveAt = Date.now();
+
+  function calmDown(){
+    calmed = true;
+    btn.classList.add('calm');
+    btn.style.position='static';
+    btn.textContent='ГОСПИТАЛИЗИРОВАТЬ (она сдалась)';
+  }
+  function flee(){
+    if (calmed) return;
+    dodgeCount++;
+    // замирает после 4 уворотов ИЛИ через 6 секунд маеты
+    if (dodgeCount >= 4 || (Date.now()-firstMoveAt) > 6000){ calmDown(); return; }
+    var zw = finalZone.clientWidth, zh = finalZone.clientHeight;
+    var bw = btn.offsetWidth, bh = btn.offsetHeight;
+    var nx = Palata.Theater.rnd(0, Math.max(0, zw-bw));
+    var ny = Palata.Theater.rnd(0, Math.max(0, zh-bh));
+    btn.style.left = nx+'px';
+    btn.style.top = ny+'px';
+  }
+  btn.addEventListener('mouseover', flee);
+  btn.addEventListener('mousemove', function(e){
+    // если курсор близко к центру кнопки — тоже убегает (для трекпадов с tap)
+    if (calmed) return;
+    var r = btn.getBoundingClientRect();
+    var cx = r.left + r.width/2, cy = r.top + r.height/2;
+    if (Math.abs(e.clientX-cx) < r.width/3 && Math.abs(e.clientY-cy) < r.height/3) flee();
+  });
+  btn.addEventListener('click', doSubmit);
+  // запасной гарантированный путь
+  document.getElementById('forceSubmit').addEventListener('click', function(e){ e.preventDefault(); doSubmit(); });
+
+  var submitting = false;
+  function doSubmit(){
+    if (submitting) return;
+    var consent = document.getElementById('consent').checked;
+    // двойное отрицание: чтобы пройти — галочка ДОЛЖНА стоять
+    if (!consent){
+      document.getElementById('e7').textContent='Поставьте галочку согласия (которое на самом деле согласие).';
+      return;
+    }
+    submitting = true;
+    document.getElementById('e7').textContent='';
+    var contact = document.getElementById('contact').value.trim();
+    // === сохраняем контакт ДО театра ===
+    Palata.Store.update(recId, { contact: contact });
+    finishWithTheater();
+  }
+
+  // ---------- финальный театр + done ----------
+  function finishWithTheater(){
+    // 1) зависание
+    Palata.Theater.freeze({
+      min:1800, max:3200,
+      messages:['Согласование с заведующим…','Печатаем браслет пациента…','Ищем свободную койку…']
+    }).then(function(){
+      // 2) фейк-ошибка, закрывается кнопкой
+      return Palata.Theater.fakeError(
+        'Ошибка 0xПАЛАТА: бланк почти потерян. Но мы его уже сохранили заранее. Нажмите, чтобы всё равно госпитализироваться.',
+        'Госпитализироваться'
+      );
+    }).then(function(){
+      // 3) ещё одно короткое зависание
+      return Palata.Theater.freeze({ min:1600, max:2400, messages:['Финализация диагноза…','Заполняем карту…'] });
+    }).then(function(){
+      // === ФИНАЛ: done:true ===
+      Palata.Store.update(recId, { done:true });
+      renderFinal();
+      show(steps.length); // sf
+    });
+  }
+
+  function renderFinal(){
+    var rec = Palata.Store.get(recId) || {};
+    // номер палаты — псевдослучайный, но всегда есть №6 шанс
+    var palatas = ['№6','№6','№13','№6½','№0','№404','№6'];
+    document.getElementById('palataNo').textContent = palatas[Palata.Theater.rnd(0, palatas.length-1)];
+    document.getElementById('finalDiag').textContent = rec.diagnosis || 'не определён';
+    document.getElementById('finalFio').textContent = rec.fio || 'неизвестный';
+  }
+
+  document.getElementById('exitBtn').addEventListener('click', function(){
+    location.href='index.html';
+  });
+
+  // запустить распад симптомов при показе шага 5
+  // (наблюдаем переход через переопределение show уже не нужно — хук тут)
+  var _show = show;
+  show = function(i){
+    _show(i);
+    if (i===4) startSymptomDecay(); else stopSymptomDecay();
+  };
+
+  // стартовая инициализация прогресса
+  show(0);
+})();
+</script>
+</body>
+</html>
