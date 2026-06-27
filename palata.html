@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ФОРМА №6-ОМЕГА · ПРИЁМНОЕ ОТДЕЛЕНИЕ · ПАЛАТА №6</title>
+<style>
+  /* ===================== БАЗА / ПОЖЕЛТЕВШАЯ БУМАГА (из registratura) ===================== */
+  :root{
+    --paper:#e7e0cb;
+    --paper2:#ddd4ba;
+    --ink:#2a2620;
+    --ink-faded:#4a443a;
+    --blue:#1c3f8f;
+    --red:#9c1f1f;
+    --line:#b7ab8a;
+    --grime:rgba(90,70,30,.10);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    min-height:100vh;
+    font-family:"Courier New",Courier,monospace;
+    color:var(--ink);
+    background:#2b271f;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 6px);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:26px 14px 60px;
+  }
+  /* лист бумаги */
+  .sheet{
+    position:relative;
+    width:760px;
+    max-width:100%;
+    background:
+      radial-gradient(circle at 18% 12%, var(--grime), transparent 40%),
+      radial-gradient(circle at 82% 78%, var(--grime), transparent 45%),
+      radial-gradient(circle at 60% 30%, rgba(120,40,10,.06), transparent 30%),
+      linear-gradient(150deg, var(--paper), var(--paper2));
+    border:1px solid #9c906f;
+    box-shadow:
+      0 0 0 10px rgba(0,0,0,.10),
+      0 18px 50px rgba(0,0,0,.55),
+      inset 0 0 60px rgba(120,95,40,.18);
+    padding:30px 36px 40px;
+    overflow:hidden;
+  }
+  .sheet::before{
+    content:"";
+    position:absolute; right:-30px; top:120px;
+    width:130px; height:130px; border-radius:50%;
+    background:radial-gradient(circle, rgba(110,70,20,.16), transparent 70%);
+    pointer-events:none;
+  }
+  .sheet::after{
+    content:"";
+    position:absolute; left:-40px; bottom:40px;
+    width:160px; height:90px; border-radius:50%;
+    background:radial-gradient(circle, rgba(60,40,10,.10), transparent 70%);
+    transform:rotate(-12deg);
+    pointer-events:none;
+  }
+
+  /* ===================== ШАПКА БЛАНКА ===================== */
+  .blank-head{
+    text-align:center;
+    border-bottom:3px double var(--ink);
+    padding-bottom:10px;
+    margin-bottom:6px;
+    position:relative;
+  }
+  .org{
+    font-size:11px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--ink-faded); line-height:1.4;
+  }
+  .form-no{ font-size:25px; font-weight:bold; letter-spacing:3px; margin:6px 0 2px; }
+  .form-sub{ font-size:12px; letter-spacing:2px; color:var(--ink-faded); }
+  .corner-code{
+    position:absolute; top:-6px; right:0;
+    font-size:10px; color:var(--ink-faded); text-align:right; line-height:1.3;
+  }
+  .corner-code2{
+    position:absolute; top:-6px; left:0;
+    font-size:10px; color:var(--ink-faded); line-height:1.3;
+  }
+
+  /* ===================== ПЕЧАТИ / ШТАМПЫ ===================== */
+  .stamp{
+    position:absolute; font-weight:bold; pointer-events:none;
+    border:3px solid var(--red); color:var(--red);
+    padding:5px 10px; text-transform:uppercase; letter-spacing:2px;
+    font-size:13px; opacity:.78; mix-blend-mode:multiply; border-radius:3px;
+  }
+  .stamp.blue{ border-color:var(--blue); color:var(--blue); }
+  .stamp.tilt-l{ transform:rotate(-13deg); }
+  .stamp.tilt-r{ transform:rotate(9deg); }
+
+  .seal{
+    position:absolute;
+    width:128px; height:128px; border-radius:50%;
+    border:3px solid var(--blue); color:var(--blue);
+    opacity:.55; mix-blend-mode:multiply; pointer-events:none;
+    transform:rotate(-8deg);
+  }
+  .seal::before{ content:""; position:absolute; inset:9px; border-radius:50%; border:2px solid var(--blue); }
+  .seal .seal-center{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:34px; font-weight:bold; letter-spacing:1px;
+  }
+  .seal svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .seal text{ font-family:"Courier New",monospace; font-size:9.6px; letter-spacing:1.5px; fill:var(--blue); font-weight:bold; }
+
+  /* ===================== ПРОГРЕСС-ОБМАНКА (издевательство G) ===================== */
+  .prog-wrap{ margin:14px 0 10px; }
+  .prog-track{
+    height:15px; border:1px solid var(--ink); background:rgba(255,255,255,.25);
+    position:relative; overflow:hidden;
+  }
+  .prog-fill{
+    height:100%;
+    background:repeating-linear-gradient(45deg, var(--blue) 0 7px, #16306c 7px 14px);
+    width:8%; transition:width .45s ease;
+  }
+  .prog-text{
+    font-size:10px; color:var(--ink-faded); margin-top:4px;
+    text-transform:uppercase; letter-spacing:.5px; text-align:right;
+  }
+
+  /* ===================== ЛЕНТА ОКОН ===================== */
+  .windows-bar{
+    display:flex; gap:0; margin:6px 0 18px; border:1px solid var(--ink);
+    background:rgba(255,255,255,.18);
+  }
+  .wbar-cell{
+    flex:1; text-align:center; font-size:9.5px; padding:6px 2px;
+    border-right:1px solid var(--ink); color:var(--ink-faded);
+    text-transform:uppercase; letter-spacing:.4px; line-height:1.3;
+  }
+  .wbar-cell:last-child{ border-right:none; }
+  .wbar-cell.active{ background:var(--ink); color:var(--paper); font-weight:bold; }
+  .wbar-cell.done{ color:var(--ink); }
+  .wbar-cell.done .wb-num::after{ content:" ✓"; }
+
+  /* ===================== ШАГИ ===================== */
+  .step{ display:none; animation:fadeIn .25s ease; }
+  .step.active{ display:block; }
+  @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+
+  .window-title{
+    font-size:17px; font-weight:bold; letter-spacing:2px; text-transform:uppercase;
+    border-bottom:1px solid var(--ink); padding-bottom:4px; margin:0 0 4px;
+  }
+  .window-sub{ font-size:11px; color:var(--ink-faded); margin:0 0 16px; font-style:italic; }
+
+  fieldset{
+    border:1px solid var(--line); margin:0 0 16px; padding:14px 16px 18px;
+    background:rgba(255,255,255,.10);
+  }
+  legend{ font-size:12px; font-weight:bold; letter-spacing:1px; padding:0 6px; text-transform:uppercase; }
+
+  label.row{ display:block; margin-bottom:14px; }
+  label.row > .lbl{
+    display:block; font-size:12px; letter-spacing:.5px; margin-bottom:3px; text-transform:uppercase;
+  }
+  .req{ color:var(--red); font-weight:bold; }
+  .hint{ font-size:10.5px; color:var(--ink-faded); font-style:italic; margin-top:3px; }
+
+  input[type=text], input[type=number], select, textarea{
+    width:100%;
+    font-family:"Courier New",Courier,monospace;
+    font-size:15px; color:var(--ink);
+    background:repeating-linear-gradient(transparent, transparent 26px, var(--line) 26px, var(--line) 27px);
+    background-color:rgba(255,255,255,.35);
+    border:none; border-bottom:2px solid var(--ink);
+    padding:4px 6px 5px; outline:none;
+  }
+  select, input[type=number]{ background-image:none; background-color:rgba(255,255,255,.35); }
+  textarea{ min-height:78px; resize:vertical; line-height:27px; background-position:0 4px; }
+  input:focus, select:focus, textarea:focus{ background-color:rgba(255,255,80,.20); border-bottom-color:var(--blue); }
+
+  .three-fio{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  @media(max-width:560px){ .three-fio{ grid-template-columns:1fr; } }
+
+  /* контейнер разбегающихся radio (издевательство C) */
+  .radios{ display:flex; flex-direction:column; gap:8px; }
+  .radios label{
+    display:flex; align-items:flex-start; gap:8px; font-size:14px; cursor:pointer;
+    padding:4px 6px; border:1px dotted transparent;
+  }
+  .radios.runaway label{ border-color:var(--line); background:rgba(255,255,255,.18); }
+  .radios input{ margin-top:3px; }
+
+  .chk{ display:flex; align-items:flex-start; gap:9px; font-size:14px; cursor:pointer; }
+  .chk input{ margin-top:3px; transform:scale(1.2); }
+
+  /* ===================== КНОПКИ ===================== */
+  .nav{ display:flex; align-items:center; justify-content:space-between; margin-top:18px; gap:12px; }
+  .btn{
+    font-family:"Courier New",Courier,monospace; cursor:pointer; border:2px solid var(--ink);
+    text-transform:uppercase; letter-spacing:1px; background:#cabf9d; color:var(--ink);
+    box-shadow:2px 2px 0 rgba(0,0,0,.3);
+  }
+  .btn:active{ transform:translate(2px,2px); box-shadow:none; }
+  .btn.next{ font-size:12px; padding:7px 14px; background:#cfc4a2; opacity:.95; }
+  .btn.next:hover{ opacity:1; }
+  .btn.big{ font-size:16px; padding:12px 22px; font-weight:bold; }
+  .btn.primary{ background:var(--blue); color:#f3eeda; border-color:#0d245a; }
+
+  /* приёмные часы (издевательство D) */
+  .btn.hours-open{ background:var(--blue); color:#f3eeda; border-color:#0d245a; font-weight:bold; }
+  .btn.hours-closed{ background:#9a917a; color:#5b5645; border-color:#6f6850; cursor:not-allowed; }
+  .hours-state{ font-size:11px; color:var(--ink-faded); font-style:italic; }
+
+  .field-err{ color:var(--red); font-size:11px; margin-top:3px; min-height:13px; font-weight:bold; }
+
+  .notice{
+    border:2px dashed var(--red); padding:10px 12px; margin:0 0 14px;
+    font-size:12px; color:var(--red); background:rgba(156,31,31,.06); font-weight:bold;
+  }
+  .notice.blue{ border-color:var(--blue); color:var(--blue); background:rgba(28,63,143,.06); }
+
+  /* ===================== ТАЛОН-ОЧЕРЕДЬ (издевательство E) ===================== */
+  .talon-screen{ text-align:center; padding:18px 8px 6px; }
+  .talon-ticket{
+    display:inline-block; border:2px dashed var(--ink); background:rgba(255,255,255,.3);
+    padding:14px 28px; margin-bottom:20px; transform:rotate(-1.2deg); min-width:230px;
+  }
+  .talon-ticket .tt-org{
+    font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--ink-faded);
+    border-bottom:1px solid var(--line); padding-bottom:5px; margin-bottom:9px;
+  }
+  .talon-ticket .tt-no{ font-size:30px; font-weight:bold; letter-spacing:3px; }
+  .talon-ticket .tt-foot{ font-size:9px; color:var(--ink-faded); margin-top:6px; text-transform:uppercase; }
+  .queue-box{ margin:6px 0 18px; }
+  .queue-num{ font-size:66px; font-weight:bold; color:var(--red); line-height:1; text-shadow:1px 1px 0 rgba(156,31,31,.2); }
+  .queue-label{ font-size:13px; color:var(--ink-faded); margin-top:4px; text-transform:uppercase; letter-spacing:1px; }
+
+  /* ===================== СЛАЙДЕРЫ ДАТЫ (перенос из inyerface) ===================== */
+  .sl-row{ display:flex; align-items:center; gap:12px; margin:10px 0; }
+  .sl-row .sl-tag{ width:78px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+  input[type=range]{ flex:1; accent-color:var(--blue); height:24px; background:transparent; cursor:pointer; }
+  .sl-val{
+    min-width:62px; text-align:center; font-weight:bold; font-size:18px;
+    border:1px solid var(--ink); background:rgba(255,255,255,.45); padding:2px 6px;
+  }
+  .date-out{
+    margin-top:12px; font-size:14px; border-top:1px dotted var(--line); padding-top:8px;
+  }
+  .date-out b{ font-size:16px; letter-spacing:1px; }
+
+  /* вертикальный слайдер суммы (перенос из inyerface) */
+  .vert-wrap{ display:flex; align-items:center; gap:22px; margin-top:12px; }
+  .vert-slider{
+    writing-mode: vertical-lr; direction: rtl;
+    width:36px; height:200px; accent-color:var(--blue); cursor:pointer;
+  }
+  .amount-display{ font-size:34px; font-weight:bold; color:var(--red); }
+
+  /* ===================== СЧЁТНАЯ МАШИНА (одометр суммы) ===================== */
+  .counter-machine{ margin-top:8px; }
+  .cm-reels{
+    display:flex; gap:5px; justify-content:flex-start; align-items:flex-end;
+    border:2px solid var(--ink); background:rgba(40,30,15,.10);
+    padding:12px 12px 10px; overflow-x:auto;
+  }
+  .cm-col{ display:flex; flex-direction:column; align-items:center; gap:6px; min-width:42px; }
+  .cm-place{
+    font-size:8.5px; line-height:1.15; text-transform:uppercase; letter-spacing:.2px;
+    color:var(--ink-faded); text-align:center; height:24px; white-space:pre-line;
+  }
+  .cm-slider{
+    writing-mode: vertical-lr; direction: rtl;
+    width:30px; height:118px; accent-color:var(--blue); cursor:pointer; flex:none; background:transparent;
+  }
+  .cm-digit{
+    width:34px; text-align:center; font-weight:bold; font-size:26px; line-height:1;
+    border:2px solid var(--ink); background:#1c1813; color:#ffd24a;
+    padding:5px 0 4px; font-family:"Courier New",monospace;
+    box-shadow:inset 0 0 6px rgba(0,0,0,.6); text-shadow:0 0 6px rgba(255,180,40,.45);
+  }
+  .cm-sep{
+    align-self:stretch; display:flex; align-items:flex-end; justify-content:center;
+    padding-bottom:6px; font-size:26px; font-weight:bold; color:var(--ink-faded);
+  }
+  .cm-total{
+    margin-top:12px; font-size:30px; font-weight:bold; color:var(--red);
+    border-top:2px solid var(--ink); padding-top:9px; letter-spacing:1px;
+    text-shadow:1px 1px 0 rgba(156,31,31,.2);
+  }
+  .cm-total #amtTotal{ font-size:34px; }
+
+  /* ===================== ПОИСК-НАОБОРОТ (издевательство F) ===================== */
+  .diag-list{
+    max-height:172px; overflow:auto; border:1px solid var(--ink);
+    background:rgba(255,255,255,.28); margin-top:6px;
+  }
+  .diag-option{
+    padding:6px 10px; border-bottom:1px dotted var(--line); cursor:pointer; font-size:14px;
+  }
+  .diag-option:last-child{ border-bottom:none; }
+  .diag-option:hover{ background:rgba(28,63,143,.10); }
+  .diag-option.sel{ background:var(--blue); color:var(--paper); font-weight:bold; }
+  .diag-option[hidden]{ display:none; }
+  .diag-chosen{ margin-top:9px; font-size:13px; }
+  .diag-chosen b{ color:var(--blue); }
+  .diag-empty{ padding:8px 10px; font-size:12px; color:var(--ink-faded); font-style:italic; }
+
+  /* ===================== КАПЧА-ИНВЕРСИЯ (издевательство H) ===================== */
+  .captcha-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+    max-width:300px; margin:12px auto 4px;
+  }
+  .captcha-grid.shake{ animation:capshake .42s; }
+  @keyframes capshake{
+    0%,100%{transform:translateX(0)} 18%{transform:translateX(-9px)} 38%{transform:translateX(9px)}
+    58%{transform:translateX(-7px)} 78%{transform:translateX(7px)}
+  }
+  .cap-cell{
+    font-size:34px; text-align:center; padding:14px 0; border:2px solid var(--ink);
+    background:rgba(255,255,255,.32); cursor:pointer; user-select:none; line-height:1;
+  }
+  .cap-cell.sel{ background:rgba(28,63,143,.18); box-shadow:inset 0 0 0 3px var(--blue); }
+  .cap-instruction{ font-size:14px; text-align:center; margin:4px 0 2px; }
+  .cap-instruction small{
+    font-size:16px; font-weight:bold; color:var(--red); border-bottom:2px solid var(--red);
+  }
+
+  /* ===================== УБЕГАЮЩАЯ КНОПКА (перенос из inyerface) ===================== */
+  .final-zone{
+    position:relative; min-height:150px; border:1px dashed var(--line);
+    margin-top:12px; background:rgba(255,255,255,.10);
+  }
+  .btn-hospital{
+    position:absolute; left:20px; top:48px;
+    font-family:"Courier New",Courier,monospace;
+    background:var(--red); color:#f3eeda; border:3px solid #5e1212;
+    padding:16px 24px; font-size:16px; font-weight:bold; letter-spacing:2px;
+    text-transform:uppercase; cursor:pointer; box-shadow:3px 3px 0 rgba(0,0,0,.3);
+    transition:top .08s, left .08s;
+  }
+  .btn-hospital.calm{ box-shadow:3px 3px 0 rgba(0,0,0,.3), 0 0 20px rgba(156,31,31,.55); }
+  .spare-link{ font-size:10px; color:var(--ink-faded); }
+  .spare-link a{ color:var(--ink-faded); }
+
+  /* согласие с четверным отрицанием (перенос из inyerface) */
+  .consent-box{
+    border:2px solid var(--ink); background:rgba(255,255,80,.12);
+    padding:12px 14px; margin-top:14px; font-size:13px; line-height:1.5;
+  }
+  .consent-box label{ cursor:pointer; display:flex; gap:9px; align-items:flex-start; }
+  .consent-box input{ margin-top:3px; transform:scale(1.2); }
+
+  /* ===================== ФИНАЛ ===================== */
+  .final{ text-align:center; padding:14px 6px; }
+  .final-stamp{
+    display:inline-block; border:6px solid var(--red); color:var(--red);
+    padding:14px 28px; font-size:30px; font-weight:bold; letter-spacing:4px;
+    transform:rotate(-5deg); text-transform:uppercase; margin:8px 0 18px;
+    box-shadow:0 0 0 4px rgba(156,31,31,.12); text-shadow:1px 1px 0 rgba(156,31,31,.2);
+  }
+  .putevka{
+    border:2px solid var(--ink); padding:18px 20px; margin:10px auto 18px; max-width:480px;
+    background:rgba(255,255,255,.22); text-align:left; font-size:13px; line-height:1.8;
+  }
+  .putevka .pv-row{ display:flex; justify-content:space-between; border-bottom:1px dotted var(--line); padding:2px 0; gap:14px; }
+  .putevka .pv-row span:first-child{ flex:0 0 auto; }
+  .putevka .pv-row b{ font-weight:bold; text-align:right; }
+  .palata-big{ font-size:22px; font-weight:bold; letter-spacing:2px; margin:10px 0; }
+  .final-text{ font-size:12px; color:var(--ink-faded); font-style:italic; line-height:1.7; max-width:520px; margin:0 auto 22px; }
+
+  .footnote{
+    margin-top:22px; border-top:1px solid var(--line); padding-top:8px;
+    font-size:9.5px; color:var(--ink-faded); display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;
+  }
+  .talon-corner{
+    position:absolute; top:10px; right:10px;
+    border:1px dashed var(--ink); padding:4px 8px; font-size:10px; color:var(--ink-faded);
+    transform:rotate(2deg); background:rgba(255,255,255,.2); line-height:1.4; text-align:center;
+  }
+  .talon-corner b{ font-size:16px; display:block; color:var(--ink); }
+
+  /* ===================== ТОСТ (льготник) ===================== */
+  .p6-toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); border:2px solid var(--red);
+    padding:10px 18px; font-size:12px; font-family:"Courier New",monospace; z-index:90000;
+    opacity:0; transition:opacity .3s, transform .3s; max-width:92%; text-align:center;
+    box-shadow:0 6px 20px rgba(0,0,0,.5);
+  }
+  .p6-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="sheet" id="sheet">
+
+  <!-- штампы поверх листа -->
+  <div class="stamp tilt-l blue" style="top:6px; right:150px;">копия</div>
+  <div class="stamp tilt-r" style="bottom:230px; left:14px;">подлежит<br>хранению</div>
+
+  <!-- гербовая печать (она же тайный вход: 6 кликов за 1.2с) -->
+  <div class="seal" id="gerbSeal" style="bottom:22px; right:28px; pointer-events:auto;">
+    <svg viewBox="0 0 128 128" aria-hidden="true">
+      <defs><path id="circlePath" d="M 64,64 m -46,0 a 46,46 0 1,1 92,0 a 46,46 0 1,1 -92,0"/></defs>
+      <text><textPath href="#circlePath" startOffset="0">ПАЛАТА №6 · ПРИЁМНОЕ ОТДЕЛЕНИЕ · </textPath></text>
+    </svg>
+    <div class="seal-center">№6</div>
+  </div>
+
+  <div class="blank-head">
+    <div class="corner-code2">инв. №___<br>экз. 1</div>
+    <div class="corner-code">УТВЕРЖДЕНО<br>зав. отд. ______</div>
+    <div class="org">Министерство здравоохранения · Областная психиатрическая больница №6<br>приёмное отделение · регистратура</div>
+    <div class="form-no" id="formTitle">ФОРМА №6-Ω</div>
+    <div class="form-sub">ЕДИНЫЙ БЛАНК ОФОРМЛЕНИЯ ПАЦИЕНТА</div>
+  </div>
+
+  <!-- ПРОГРЕСС-ОБМАНКА (G) -->
+  <div class="prog-wrap">
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-text" id="progText">шаг 1 из 6 · требуется ещё одна справка</div>
+  </div>
+
+  <!-- лента окон -->
+  <div class="windows-bar" id="windowsBar">
+    <div class="wbar-cell" data-w="0"><span class="wb-num">ТАЛОН</span><br>очередь</div>
+    <div class="wbar-cell" data-w="1"><span class="wb-num">ОКНО №1</span><br>регистратура</div>
+    <div class="wbar-cell" data-w="2"><span class="wb-num">ОКНО №2</span><br>врач</div>
+    <div class="wbar-cell" data-w="3"><span class="wb-num">ОКНО №3</span><br>процедуры</div>
+    <div class="wbar-cell" data-w="4"><span class="wb-num">ОКНО №4</span><br>главбух</div>
+    <div class="wbar-cell" data-w="5"><span class="wb-num">ВЫДАЧА</span><br>путёвка</div>
+  </div>
+
+  <!-- ================= ОКНО №0 — ТАЛОН / ОЧЕРЕДЬ ================= -->
+  <section class="step active" id="step0">
+    <h2 class="window-title">Талонный аппарат</h2>
+    <p class="window-sub">Без талона приём не производится. Талон выдаётся один раз. Беречь до выписки.</p>
+
+    <div class="talon-screen">
+      <div class="talon-ticket">
+        <div class="tt-org">Областная псих. больница №6 · талон электронной очереди</div>
+        <div class="tt-no" id="talonTicketNo">№ —</div>
+        <div class="tt-foot">сектор «приёмное» · к окну №1</div>
+      </div>
+
+      <div class="queue-box" id="queueBox" style="display:none;">
+        <div class="queue-num" id="queueNum">14</div>
+        <div class="queue-label">человек перед вами</div>
+      </div>
+
+      <div class="field-err" id="err0" style="text-align:center;"></div>
+
+      <div style="margin-top:10px;">
+        <button type="button" class="btn big primary" id="takeTalon">Возьмите талон</button>
+        <button type="button" class="btn big primary" id="goWindow1" style="display:none;">Пройти к окну №1 ▸</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ОКНО №1 — РЕГИСТРАТУРА ================= -->
+  <section class="step" id="step1">
+    <h2 class="window-title">Окно №1 · Регистратура</h2>
+    <p class="window-sub">Заполняется лично пациентом разборчивым почерком. Исправления не допускаются.</p>
+
+    <fieldset>
+      <legend>Сведения о пациенте</legend>
+      <div class="three-fio">
+        <label class="row">
+          <span class="lbl">Фамилия <span class="req">*</span></span>
+          <input type="text" id="lastName" autocomplete="off">
+          <span class="hint">Регистр букв выставляется автоматически по ГОСТ-6. Не спорьте с аппаратом.</span>
+        </label>
+        <label class="row">
+          <span class="lbl">Имя <span class="req">*</span></span>
+          <input type="text" id="firstName" autocomplete="off">
+          <span class="hint">Поле работает по протоколу задержки. Символы появляются позже. Это нормально.</span>
+        </label>
+        <label class="row">
+          <span class="lbl">Отчество <span class="req">*</span></span>
+          <input type="text" id="middleName" autocomplete="off">
+          <span class="hint">Отчество обязательно. Отсутствие отчества — основание для отказа в приёме.</span>
+        </label>
+      </div>
+      <div class="hint">Внесение данных копированием недопустимо (приказ №6). Вставка, перетаскивание и контекстное меню заблокированы.</div>
+      <div class="field-err" id="err1fio"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Основание прибытия</legend>
+      <div class="radios runaway" id="attendeeRadios">
+        <label><input type="radio" name="attendee" value="self"> Прибыл(а) ЛИЧНО, по собственному недомыслию</label>
+        <label><input type="radio" name="attendee" value="proxy"> Прибыл(а) ПО ДОВЕРЕННОСТИ за другое лицо</label>
+      </div>
+      <label class="row" id="proxyWrap" style="display:none; margin-top:12px;">
+        <span class="lbl">От кого доверенность (ФИО доверителя) <span class="req">*</span></span>
+        <input type="text" id="proxyFor" autocomplete="off">
+        <span class="hint">Без указания доверителя доверенность считается самозванством.</span>
+      </label>
+      <div class="hint">Варианты могут менять местами расположение. Значение от этого не меняется.</div>
+      <div class="field-err" id="err1att"></div>
+    </fieldset>
+
+    <div class="nav">
+      <span class="hours-state" id="hoursState">режим окна: …</span>
+      <button type="button" class="btn next hours-closed" id="go1">ПЕРЕРЫВ (ждите) ⏳</button>
+    </div>
+  </section>
+
+  <!-- ================= ОКНО №2 — ВРАЧ ================= -->
+  <section class="step" id="step2">
+    <h2 class="window-title">Окно №2 · Дежурный врач</h2>
+    <p class="window-sub">Осмотр производится заочно. Симптомы записываются со слов санитара.</p>
+
+    <fieldset>
+      <legend>Предварительный диагноз</legend>
+      <label class="row" style="margin-bottom:6px;">
+        <span class="lbl">Поиск по справочнику диагнозов <span class="req">*</span></span>
+        <input type="text" id="diagSearch" autocomplete="off" placeholder="печатайте — и нужное спрячется…">
+        <span class="hint">Справочник работает по реверс-протоколу: при наборе СОВПАДЕНИЯ скрываются. Чтобы выбрать — найдите глазами и щёлкните.</span>
+      </label>
+      <div class="diag-list" id="diagList"></div>
+      <div class="diag-chosen">Выбрано: <b id="diagChosen">— ничего —</b></div>
+      <div class="field-err" id="err2diag"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Дата рождения (высокоточными регуляторами)</legend>
+      <div class="sl-row"><span class="sl-tag">Число</span><input type="range" id="sd" min="1" max="31" value="15"><span class="sl-val" id="sdv">15</span></div>
+      <div class="sl-row"><span class="sl-tag">Месяц</span><input type="range" id="sm" min="1" max="12" value="6"><span class="sl-val" id="smv">6</span></div>
+      <div class="sl-row"><span class="sl-tag">Год</span><input type="range" id="sy" min="1920" max="2010" value="1965"><span class="sl-val" id="syv">1965</span></div>
+      <div class="date-out">Собранная дата рождения: <b><span id="dateOut">15.06.1965</span></b></div>
+      <span class="hint">Регуляторы чувствительны к нажиму. Точное попадание — признак здоровой психики.</span>
+      <div class="field-err" id="err2date"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Жалобы и симптомы</legend>
+      <label class="row">
+        <span class="lbl">Опишите жалобы (со слов) <span class="req">*</span></span>
+        <textarea id="symptoms" placeholder="Например: слышит голоса заведующего; считает себя коливером; пишет код по ночам…"></textarea>
+        <span class="hint">Не менее пяти слов. Краткость — признак скрытности.</span>
+      </label>
+      <div class="field-err" id="err2symp"></div>
+    </fieldset>
+
+    <div class="nav">
+      <span></span>
+      <button type="button" class="btn next" id="go2">к процедурам ▸</button>
+    </div>
+  </section>
+
+  <!-- ================= ОКНО №3 — ПРОЦЕДУРЫ / КАПЧА ================= -->
+  <section class="step" id="step3">
+    <h2 class="window-title">Окно №3 · Процедурный кабинет</h2>
+    <p class="window-sub">Санитарная проверка. Подтвердите, что вы не санитарка-робот.</p>
+
+    <fieldset>
+      <legend>Дезинфекционная капча</legend>
+      <p class="cap-instruction">Отметьте ВСЕ клетки, где <small>НЕТ</small> таблетки 💊</p>
+      <div class="captcha-grid" id="captchaGrid"></div>
+      <span class="hint" style="display:block; text-align:center;">Внимательно читайте задание. Лишняя или пропущенная клетка — пересдача. Промах лечится повтором.</span>
+      <div class="field-err" id="err3cap" style="text-align:center;"></div>
+    </fieldset>
+
+    <div class="nav">
+      <span></span>
+      <button type="button" class="btn next" id="go3">проверить и продолжить ▸</button>
+    </div>
+  </section>
+
+  <!-- ================= ОКНО №4 — ГЛАВБУХ ================= -->
+  <section class="step" id="step4">
+    <h2 class="window-title">Окно №4 · Главный бухгалтер</h2>
+    <p class="window-sub">Касса работает по настроению. Сдачи нет. Чек не предусмотрен формой.</p>
+
+    <fieldset>
+      <legend>Конверт и взнос</legend>
+      <div class="row">
+        <span class="lbl">Заявленная сумма в конверте (руб.) <span class="req">*</span></span>
+        <div class="counter-machine" id="counterMachine">
+          <div class="cm-reels" id="cmReels"></div>
+          <div class="cm-total">ИТОГО: <span id="amtTotal">0</span> ₽</div>
+          <div class="hint">«СЧЁТНАЯ МАШИНА» образца наркомфина. Семь разрядов — миллионы · сотни тысяч · десятки тысяч · тысячи · сотни · десятки · единицы. Тащите ВЕРТИКАЛЬНЫЕ ползунки 0–9 по каждому разряду. Да, они короткие и дёрганые. Да, это специально. Диапазон 0…9 999 999 ₽.</div>
+        </div>
+        <input type="hidden" id="amt" value="0">
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <span class="lbl">Состояние конверта <span class="req">*</span></span>
+        <div class="radios">
+          <label><input type="radio" name="envState" value="open"> Конверт НЕзапечатан (по регламенту)</label>
+          <label><input type="radio" name="envState" value="sealed"> Конверт запечатан</label>
+        </div>
+        <span class="hint">По регламенту приёмки конверт должен быть НЕзапечатан.</span>
+      </div>
+      <div class="field-err" id="err4env"></div>
+
+      <label class="chk" style="margin-top:6px;">
+        <input type="checkbox" id="envHanded">
+        <span>Конверт передан в окно лично в руки бухгалтеру <span class="req">*</span></span>
+      </label>
+      <div class="field-err" id="err4handed"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Обратная связь</legend>
+      <label class="row">
+        <span class="lbl">Контакт для уведомления о выписке (телеграм)</span>
+        <input type="text" id="contact" autocomplete="off" placeholder="@username">
+        <span class="hint">Указывается добровольно-принудительно. Вставка недопустима (приказ №6).</span>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Согласие на госпитализацию</legend>
+      <div class="consent-box">
+        <label>
+          <input type="checkbox" id="consent">
+          <span>Я <b>НЕ</b> против того, чтобы <b>не</b> отказываться от госпитализации, и <b>не</b> подтверждаю, что я <b>не</b> согласен(на). Поставьте галочку, если всё ясно.</span>
+        </label>
+      </div>
+      <div class="field-err" id="err4consent"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Завершение оформления</legend>
+      <p class="hint" style="margin-top:0;">Нажмите кнопку «ГОСПИТАЛИЗИРОВАТЬ». Она немного нервная — убегает от курсора, но после нескольких попыток замирает.</p>
+      <div class="final-zone" id="finalZone">
+        <button type="button" class="btn-hospital" id="btnHospital">ГОСПИТАЛИЗИРОВАТЬ</button>
+      </div>
+      <div class="spare-link" style="margin-top:10px;">
+        <a href="#" id="forceSubmit">(служебный вход: оформить без беготни)</a>
+      </div>
+      <div class="field-err" id="err4final"></div>
+    </fieldset>
+  </section>
+
+  <!-- ================= ВЫДАЧА — ФИНАЛ ================= -->
+  <section class="step" id="stepFinal">
+    <div class="final">
+      <div class="final-stamp">ПУТЁВКА ВЫДАНА</div>
+      <div class="talon-corner">талон<br><b id="talonNo">№000</b></div>
+
+      <div class="palata-big" id="palataLine">Палата №6, койка ?</div>
+
+      <div class="putevka" id="putevkaBody"></div>
+
+      <div class="final-text">
+        Поздравляем! Вы официально оформлены приёмным отделением. Сопротивление бесполезно
+        и зафиксировано в карте. Тапочки выдаются на втором этаже под роспись.
+        Передачи принимаются по чётным. Голоса — по нечётным.
+        Добро пожаловать в коллектив.
+      </div>
+
+      <button type="button" class="btn big primary" id="nextPatient">Следующий пациент ▸</button>
+    </div>
+  </section>
+
+  <div class="footnote">
+    <span>Ф.6-Ω · приёмное отделение · заполнять синими чернилами</span>
+    <span>лист 1 из 1 · хранить 75 лет</span>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // SECURITY FIX: fallback esc must actually escape HTML metacharacters (defense-in-depth).
+  // Раньше fallback просто приводил к строке и не экранировал — функция с именем esc,
+  // которая не экранирует, опасна для будущих правок. Теперь поведение совпадает с Palata.util.esc.
+  var esc = (window.Palata && Palata.util && Palata.util.esc) ? Palata.util.esc : function(s){
+    return String(s==null?'':s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  };
+
+  // ---------- киоск ----------
+  if (window.Palata && Palata.Kiosk) {
+    Palata.Kiosk.init({ lockContextMenu:true, idleResetMs:90000, home:'palata.html' });
+  }
+
+  function rnd(min, max){ return Math.floor(min + Math.random()*(max-min+1)); }
+
+  // ---------- состояние ----------
+  var recId = null;
+  var selectedDiagnosis = '';
+  var submitting = false;
+
+  // ---------- ТОСТ ----------
+  function toast(msg){
+    var t = document.createElement('div');
+    t.className = 'p6-toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){
+      t.classList.remove('show');
+      setTimeout(function(){ if (t.parentNode) t.parentNode.removeChild(t); }, 400);
+    }, 2200);
+  }
+
+  function setErr(id, msg){
+    var el = document.getElementById(id);
+    if (el){ el.textContent = msg || ''; if (msg && window.Palata && Palata.Theater) Palata.Theater.flicker(el, 500); }
+  }
+  function clearErrs(ids){ ids.forEach(function(id){ setErr(id,''); }); }
+
+  // ====================================================================
+  // ПРОГРЕСС-ОБМАНКА (издевательство G)
+  // ====================================================================
+  var fakeTotal = 6;
+  var progFill = document.getElementById('progFill');
+  var progText = document.getElementById('progText');
+  function bumpProgress(realStep){
+    fakeTotal += 1 + rnd(0,2);                 // цель всё время отодвигается
+    if (fakeTotal <= realStep) fakeTotal = realStep + 1;
+    var pct = Math.round(realStep / fakeTotal * 100);
+    if (Math.random() < 0.4) pct = Math.max(6, pct - rnd(3,10)); // иногда откат
+    progFill.style.width = pct + '%';
+    progText.textContent = 'шаг ' + realStep + ' из ' + fakeTotal + ' · требуется ещё одна справка';
+  }
+
+  // ====================================================================
+  // НАВИГАЦИЯ
+  // ====================================================================
+  var STEPS = { 0:'step0', 1:'step1', 2:'step2', 3:'step3', 4:'step4', final:'stepFinal' };
+  // realStep для прогресс-обманки: талон=1, окно1=2 ... выдача=6
+  var REAL = { 0:1, 1:2, 2:3, 3:4, 4:5, final:6 };
+  var BAR  = { 0:0, 1:1, 2:2, 3:3, 4:4, final:5 };
+
+  function showStep(key){
+    Object.keys(STEPS).forEach(function(k){
+      document.getElementById(STEPS[k]).classList.toggle('active', k === String(key));
+    });
+    // лента окон
+    var activeNum = BAR[key];
+    document.querySelectorAll('#windowsBar .wbar-cell').forEach(function(c){
+      var n = parseInt(c.getAttribute('data-w'),10);
+      c.classList.remove('active','done');
+      if (n === activeNum) c.classList.add('active');
+      else if (n < activeNum) c.classList.add('done');
+    });
+    bumpProgress(REAL[key]);
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  // ====================================================================
+  // ОКНО №0 — ТАЛОН-ОЧЕРЕДЬ (издевательство E)
+  // ====================================================================
+  (function(){
+    var ticketNo = document.getElementById('talonTicketNo');
+    var queueBox = document.getElementById('queueBox');
+    var queueNum = document.getElementById('queueNum');
+    var takeBtn = document.getElementById('takeTalon');
+    var goBtn = document.getElementById('goWindow1');
+    var N = 14;
+    var timer = null;
+    var startedAt = 0;
+
+    takeBtn.addEventListener('click', function(){
+      ticketNo.textContent = '№ ' + (140 + rnd(1,59));
+      queueBox.style.display = 'block';
+      queueNum.textContent = N;
+      takeBtn.style.display = 'none';
+      startedAt = Date.now();
+      timer = setInterval(tick, 600);
+    });
+
+    function tick(){
+      N--;
+      // ~16% шанс: вне очереди влез льготник — но только первые ~14с,
+      // дальше очередь гарантированно дренажится (защита бюджета времени).
+      if ((Date.now()-startedAt) < 14000 && Math.random() < 0.16){
+        N += rnd(2,5);
+        toast('Вне очереди принят льготник. Очередь скорректирована.');
+      }
+      if (N <= 0){
+        N = 0;
+        clearInterval(timer); timer = null;
+        queueNum.textContent = '0';
+        document.getElementById('queueBox').querySelector('.queue-label').textContent = 'окно свободно';
+        goBtn.style.display = 'inline-block';
+      } else {
+        queueNum.textContent = N;
+        if (Palata && Palata.Theater) Palata.Theater.flicker(queueNum, 200);
+      }
+    }
+
+    goBtn.addEventListener('click', function(){ showStep(1); });
+  })();
+
+  // ====================================================================
+  // ОКНО №1 — РЕГИСТРАТУРА
+  // ====================================================================
+  var lastName  = document.getElementById('lastName');
+  var firstName = document.getElementById('firstName');
+  var middleName= document.getElementById('middleName');
+
+  // --- издевательство B: запрет вставки/перетаскивания/контекстного меню ---
+  function noPaste(el){
+    ['paste','drop','contextmenu'].forEach(function(ev){
+      el.addEventListener(ev, function(e){ e.preventDefault(); });
+    });
+  }
+  [lastName, firstName, middleName].forEach(noPaste);
+
+  // --- издевательство A: регистр-саботаж на Фамилии ---
+  lastName.addEventListener('keydown', function(e){
+    if (e.ctrlKey || e.metaKey || e.altKey) return;   // не мешаем хоткеям
+    if (e.key == null || e.key.length !== 1) return;   // только печатные символы
+    e.preventDefault();
+    var c = e.key;
+    var swapped = (c === c.toUpperCase()) ? c.toLowerCase() : c.toUpperCase();
+    var start = lastName.selectionStart, end = lastName.selectionEnd;
+    var v = lastName.value;
+    lastName.value = v.slice(0, start) + swapped + v.slice(end);
+    var pos = start + 1;
+    try { lastName.setSelectionRange(pos, pos); } catch(_){}
+  });
+
+  // --- издевательство: имя с лагом (перенос из inyerface) ---
+  if (window.Palata && Palata.Theater) Palata.Theater.lagInput(firstName, 230);
+
+  // --- издевательство C: разбегающиеся radio ---
+  (function(){
+    var box = document.getElementById('attendeeRadios');
+    var hovers = 0, calmed = false;
+    function swapNodes(a, b){
+      var tmp = document.createComment('p6');
+      a.parentNode.insertBefore(tmp, a);
+      b.parentNode.insertBefore(a, b);
+      tmp.parentNode.insertBefore(b, tmp);
+      tmp.parentNode.removeChild(tmp);
+    }
+    Array.prototype.forEach.call(box.querySelectorAll('label'), function(lab){
+      lab.addEventListener('mouseenter', function(){
+        if (calmed) return;
+        hovers++;
+        if (hovers > 3){ calmed = true; return; } // успокаиваем — чтоб точно выбрали
+        var labels = Array.prototype.slice.call(box.querySelectorAll('label'));
+        var others = labels.filter(function(l){ return l !== lab; });
+        if (!others.length) return;
+        swapNodes(lab, others[rnd(0, others.length-1)]);
+      });
+    });
+    // первый клик по любому radio — успокаиваем
+    box.addEventListener('change', function(){ calmed = true; });
+    // показать/скрыть поле доверенности
+    box.addEventListener('change', function(){
+      var v = (box.querySelector('input[name="attendee"]:checked')||{}).value;
+      document.getElementById('proxyWrap').style.display = (v === 'proxy') ? 'block' : 'none';
+    });
+    noPaste(document.getElementById('proxyFor'));
+  })();
+
+  // --- издевательство D: приёмные часы кнопки «Далее» (только этот переход) ---
+  var go1 = document.getElementById('go1');
+  var hoursState = document.getElementById('hoursState');
+  var windowOpen = false;
+  (function cycleHours(){
+    windowOpen = true;
+    go1.textContent = 'ОКНО ОТКРЫТО — жмите! ▸';
+    go1.classList.remove('hours-closed'); go1.classList.add('hours-open');
+    hoursState.textContent = 'режим окна: ПРИЁМ';
+    setTimeout(function(){
+      windowOpen = false;
+      go1.textContent = 'ПЕРЕРЫВ (ждите) ⏳';
+      go1.classList.remove('hours-open'); go1.classList.add('hours-closed');
+      hoursState.textContent = 'режим окна: перерыв';
+      setTimeout(cycleHours, 3500);
+    }, 950);
+  })();
+
+  go1.addEventListener('click', async function(){
+    clearErrs(['err1fio','err1att']);
+    var ln = lastName.value.trim();
+    var fn = firstName.value.trim();
+    var mn = middleName.value.trim();
+    var ok = true;
+
+    if (!ln || !fn){ setErr('err1fio','Фамилия и имя обязательны к заполнению.'); ok = false; }
+    else if (!mn){ setErr('err1fio','Отчество обязательно. Нет отчества — нет приёма (впишите хоть что-нибудь).'); ok = false; }
+
+    var att = (document.querySelector('input[name="attendee"]:checked')||{}).value || '';
+    if (!att){ setErr('err1att','Укажите основание прибытия.'); ok = false; }
+    var proxyFor = '';
+    if (att === 'proxy'){
+      proxyFor = document.getElementById('proxyFor').value.trim();
+      if (!proxyFor){ setErr('err1att','Укажите, от кого доверенность.'); ok = false; }
+    }
+    if (!ok) return;
+
+    // приёмные часы: пускаем ТОЛЬКО когда окно открыто
+    if (!windowOpen){
+      setErr('err1att','Окно на перерыве. Дождитесь надписи «ОКНО ОТКРЫТО» и жмите быстро.');
+      return;
+    }
+
+    var fio = (ln + ' ' + fn + ' ' + mn).trim();
+
+    // --- СНАЧАЛА молча сохраняем реальные данные ---
+    if (window.Palata && Palata.Store){
+      if (!recId) recId = Palata.Store.create({ skin:'palata' });
+      Palata.Store.update(recId, { fio:fio, attendee:att, proxyFor:proxyFor });
+    }
+
+    // --- ПОТОМ театр ---
+    if (window.Palata && Palata.Theater){
+      await Palata.Theater.freeze({ min:1600, max:2600, messages:[
+        'Запрос отправлен в архив, ожидайте…',
+        'Сверяем ФИО с домовой книгой…',
+        'Поиск карты по картотеке (буква «'+esc(ln.charAt(0)||'?')+'»)…'
+      ]});
+    }
+    showStep(2);
+  });
+
+  // ====================================================================
+  // ОКНО №2 — ВРАЧ
+  // ====================================================================
+  // --- издевательство F: поиск-наоборот по диагнозам ---
+  var DIAGNOSES = [
+    'Вялотекущая шизофрения опен-спейса',
+    'Маниакально-депрессивный коворкинг',
+    'Острый синдром самозванца',
+    'Биполярное расстройство дедлайна',
+    'Паранойя по поводу общей кухни',
+    'Кататонический энтузиазм неясного генеза',
+    'Невроз навязчивого бронирования',
+    'Делирий продуктивности',
+    'Истерическая любовь к чаепитиям',
+    'Обсессивно-компульсивная уборка чужого',
+    'Аффективное расстройство вай-фая',
+    'Деменция групповых чатов',
+    'Фобия пустого холодильника (коммунальная)',
+    'Хронический эскапизм в коливинг',
+    'Расщепление личности удалёнщика',
+    'Синдром вечного стендапа'
+  ];
+  (function(){
+    var list = document.getElementById('diagList');
+    var search = document.getElementById('diagSearch');
+    var chosen = document.getElementById('diagChosen');
+    DIAGNOSES.forEach(function(d){
+      var opt = document.createElement('div');
+      opt.className = 'diag-option';
+      opt.textContent = d;                    // безопасно: textContent
+      opt.addEventListener('click', function(){
+        selectedDiagnosis = d;
+        chosen.textContent = d;               // безопасно: textContent
+        Array.prototype.forEach.call(list.querySelectorAll('.diag-option'), function(o){
+          o.classList.toggle('sel', o === opt);
+        });
+        setErr('err2diag','');
+      });
+      list.appendChild(opt);
+    });
+    // реверс-поиск: при наборе СОВПАДЕНИЯ скрываются
+    search.addEventListener('input', function(){
+      var q = this.value.trim().toLowerCase();
+      Array.prototype.forEach.call(list.querySelectorAll('.diag-option'), function(o){
+        o.hidden = (q !== '') && o.textContent.toLowerCase().indexOf(q) !== -1;
+      });
+    });
+  })();
+
+  // --- дата рождения тремя слайдерами (перенос из inyerface) ---
+  var sd=document.getElementById('sd'), sm=document.getElementById('sm'), sy=document.getElementById('sy');
+  function pad(n){ return n<10?'0'+n:''+n; }
+  function syncDate(){
+    document.getElementById('sdv').textContent = sd.value;
+    document.getElementById('smv').textContent = sm.value;
+    document.getElementById('syv').textContent = sy.value;
+    var out = pad(+sd.value)+'.'+pad(+sm.value)+'.'+sy.value;
+    document.getElementById('dateOut').textContent = out;
+    return out;
+  }
+  [sd,sm,sy].forEach(function(s){ s.addEventListener('input', syncDate); });
+  syncDate();
+
+  document.getElementById('go2').addEventListener('click', async function(){
+    clearErrs(['err2diag','err2date','err2symp']);
+    var ok = true;
+
+    if (!selectedDiagnosis){ setErr('err2diag','Выберите диагноз из справочника (щёлкните по строке).'); ok = false; }
+
+    var birthDate = syncDate();
+
+    var symptoms = document.getElementById('symptoms').value.trim();
+    var words = symptoms ? symptoms.split(/\s+/).filter(Boolean) : [];
+    if (words.length < 5){ setErr('err2symp','Опишите жалобы не менее чем пятью словами. Скрытность усугубляет диагноз.'); ok = false; }
+
+    if (!ok) return;
+
+    // --- сохраняем ---
+    if (window.Palata && Palata.Store && recId){
+      Palata.Store.update(recId, { diagnosis:selectedDiagnosis, birthDate:birthDate, symptoms:symptoms });
+    }
+
+    // --- театр: фейк-ошибка + зависание ---
+    if (window.Palata && Palata.Theater){
+      await Palata.Theater.fakeError(
+        'Картотека временно недоступна (заведующий унёс ключ). Ваши данные приняты. Нажмите «Так и быть» для продолжения.',
+        'Так и быть'
+      );
+      await Palata.Theater.freeze({ min:1600, max:2600, messages:[
+        'Согласование диагноза с заведующим отделением…',
+        'Заверяем подпись врача (врач спит)…',
+        'Ищем свободную койку…'
+      ]});
+    }
+    showStep(3);
+  });
+
+  // ====================================================================
+  // ОКНО №3 — КАПЧА-ИНВЕРСИЯ (издевательство H)
+  // ====================================================================
+  var DECOYS = ['🩺','💉','🧪','🩹','🌡️','🦠','🧬','🩻','🧫'];
+  var capState = []; // {el, isPill, sel}
+  function buildCaptcha(){
+    var grid = document.getElementById('captchaGrid');
+    grid.innerHTML = '';
+    capState = [];
+    var n = 9, pills = rnd(3,4);
+    var arr = [];
+    for (var i=0;i<n;i++) arr.push(i < pills);
+    for (var j=arr.length-1;j>0;j--){ var k=rnd(0,j); var t=arr[j]; arr[j]=arr[k]; arr[k]=t; }
+    arr.forEach(function(isPill){
+      var cell = document.createElement('div');
+      cell.className = 'cap-cell';
+      cell.textContent = isPill ? '💊' : DECOYS[rnd(0, DECOYS.length-1)];
+      var rec = { el:cell, isPill:isPill, sel:false };
+      cell.addEventListener('click', function(){
+        rec.sel = !rec.sel;
+        cell.classList.toggle('sel', rec.sel);
+      });
+      grid.appendChild(cell);
+      capState.push(rec);
+    });
+  }
+  buildCaptcha();
+
+  document.getElementById('go3').addEventListener('click', async function(){
+    setErr('err3cap','');
+    // правильно = выбраны РОВНО клетки БЕЗ таблетки
+    var ok = capState.every(function(r){ return r.sel === !r.isPill; });
+    if (!ok){
+      var grid = document.getElementById('captchaGrid');
+      grid.classList.add('shake');
+      setTimeout(function(){ grid.classList.remove('shake'); buildCaptcha(); }, 450);
+      setErr('err3cap','Неверно: отмечать нужно клетки БЕЗ таблетки 💊. Дезинфицируем заново.');
+      return;
+    }
+    if (window.Palata && Palata.Theater){
+      await Palata.Theater.freeze({ min:1200, max:2000, messages:[
+        'Санобработка пройдена. Проветриваем кабинет…',
+        'Сверяем оттиск с эталонным оттиском…'
+      ]});
+    }
+    showStep(4);
+  });
+
+  // ====================================================================
+  // ОКНО №4 — ГЛАВБУХ
+  // ====================================================================
+  // --- СЧЁТНАЯ МАШИНА: сумма семью разрядными слайдерами (одометр) ---
+  // Разряды: миллионы / сотни тыс. / десятки тыс. / тысячи / сотни / десятки / единицы.
+  // Каждый ползунок 0–9, вертикальный, короткий и дёрганый (это фича — мучительно на
+  // трекпаде). Под слайдерами живьём собираем ИТОГО. В поле amt пишем ТОЧНОЕ целое
+  // число (0…9 999 999).
+  var amt = document.getElementById('amt');                 // скрытое поле — точный итог
+  var amtTotal = document.getElementById('amtTotal');
+  var CM_PLACES = [
+    { pow:6, lbl:'млн' },
+    { pow:5, lbl:'сот.\nтыс.' },
+    { pow:4, lbl:'дес.\nтыс.' },
+    { pow:3, lbl:'тыс.' },
+    { pow:2, lbl:'сот.' },
+    { pow:1, lbl:'дес.' },
+    { pow:0, lbl:'ед.' }
+  ];
+  var cmReels = [];
+  function fmtRub(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); } // 150000 → "150 000"
+  function syncAmt(){
+    var total = 0;
+    for (var i=0;i<cmReels.length;i++){
+      var d = +cmReels[i].slider.value;
+      cmReels[i].digit.textContent = d;
+      total += d * Math.pow(10, cmReels[i].pow);
+    }
+    if (total < 0) total = 0;
+    if (total > 9999999) total = 9999999;                   // потолок диапазона
+    amt.value = String(total);                              // ТОЧНОЕ целое в поле
+    amtTotal.textContent = fmtRub(total);
+    return total;
+  }
+  function currentAmount(){ return parseInt(amt.value, 10) || 0; }
+  (function buildCounterMachine(){
+    var reels = document.getElementById('cmReels');
+    reels.innerHTML = '';
+    cmReels = [];
+    CM_PLACES.forEach(function(p, idx){
+      var col = document.createElement('div'); col.className = 'cm-col';
+      var place = document.createElement('div'); place.className = 'cm-place'; place.textContent = p.lbl;
+      var slider = document.createElement('input');
+      slider.type = 'range'; slider.min = '0'; slider.max = '9'; slider.step = '1'; slider.value = '0';
+      slider.className = 'cm-slider';
+      slider.setAttribute('aria-label', 'разряд ' + p.lbl.replace('\n',' '));
+      slider.id = 'amtDigit' + p.pow;
+      var digit = document.createElement('div'); digit.className = 'cm-digit'; digit.textContent = '0';
+      slider.addEventListener('input', function(){
+        syncAmt();
+        if (window.Palata && Palata.Theater) Palata.Theater.flicker(digit, 120);
+      });
+      col.appendChild(place); col.appendChild(slider); col.appendChild(digit);
+      reels.appendChild(col);
+      cmReels.push({ slider:slider, digit:digit, pow:p.pow });
+      // разрядные пробелы как на табло: после миллионов (idx 0) и после тысяч (idx 3)
+      if (idx === 0 || idx === 3){
+        var sep = document.createElement('div'); sep.className = 'cm-sep'; sep.textContent = '·';
+        reels.appendChild(sep);
+      }
+    });
+    syncAmt();
+  })();
+
+  // запрет вставки на контакт (издевательство B)
+  noPaste(document.getElementById('contact'));
+
+  // --- убегающая кнопка ГОСПИТАЛИЗИРОВАТЬ (перенос из inyerface) ---
+  var finalZone = document.getElementById('finalZone');
+  var btn = document.getElementById('btnHospital');
+  var dodgeCount = 0, calmed = false, firstMoveAt = Date.now();
+  function calmDown(){
+    calmed = true;
+    btn.classList.add('calm');
+    btn.style.position = 'static';
+    btn.textContent = 'ГОСПИТАЛИЗИРОВАТЬ (она сдалась)';
+  }
+  function flee(){
+    if (calmed) return;
+    dodgeCount++;
+    if (dodgeCount >= 4 || (Date.now()-firstMoveAt) > 6000){ calmDown(); return; }
+    var zw = finalZone.clientWidth, zh = finalZone.clientHeight;
+    var bw = btn.offsetWidth, bh = btn.offsetHeight;
+    btn.style.left = rnd(0, Math.max(0, zw-bw)) + 'px';
+    btn.style.top  = rnd(0, Math.max(0, zh-bh)) + 'px';
+  }
+  btn.addEventListener('mouseover', flee);
+  btn.addEventListener('mousemove', function(e){
+    if (calmed) return;
+    var r = btn.getBoundingClientRect();
+    var cx = r.left + r.width/2, cy = r.top + r.height/2;
+    if (Math.abs(e.clientX-cx) < r.width/3 && Math.abs(e.clientY-cy) < r.height/3) flee();
+  });
+  btn.addEventListener('click', doSubmit);
+  document.getElementById('forceSubmit').addEventListener('click', function(e){ e.preventDefault(); doSubmit(); });
+
+  async function doSubmit(){
+    if (submitting) return;
+    clearErrs(['err4env','err4handed','err4consent','err4final']);
+
+    var amount = currentAmount();                     // ТОЧНОЕ собранное целое (0…9 999 999)
+    var envState = (document.querySelector('input[name="envState"]:checked')||{}).value || '';
+    var handed = document.getElementById('envHanded').checked;
+    var contact = document.getElementById('contact').value.trim();
+    var consent = document.getElementById('consent').checked;
+
+    // СНАЧАЛА сохраняем всё, что собрали (данные святое — даже до проверок)
+    if (window.Palata && Palata.Store && recId){
+      Palata.Store.update(recId, { amount:amount, broughtEnvelope:handed, contact:contact });
+    }
+
+    if (!envState){ setErr('err4env','Укажите состояние конверта.'); return; }
+
+    // запечатанный конверт — не пускаем, отправляем «к окну №1», но не теряем данные
+    if (envState === 'sealed'){
+      if (window.Palata && Palata.Theater){
+        await Palata.Theater.fakeError(
+          'По регламенту приёмки конверт должен быть НЕзапечатан. Распечатайте конверт и вернитесь к окну №1. (Данные уже сохранены, паниковать не нужно.)',
+          'Распечатать конверт'
+        );
+      }
+      var sealedRadio = document.querySelector('input[name="envState"][value="sealed"]');
+      if (sealedRadio) sealedRadio.checked = false;
+      setErr('err4env','Конверт запечатан — приёмка невозможна. Выберите «НЕзапечатан».');
+      return;
+    }
+
+    if (!handed){ setErr('err4handed','Без передачи конверта в окно оформление невозможно. Поставьте галочку.'); return; }
+    if (!consent){ setErr('err4consent','Поставьте галочку согласия (которое на самом деле согласие).'); return; }
+
+    submitting = true;
+
+    if (window.Palata && Palata.Store && recId){
+      Palata.Store.update(recId, { amount:amount, broughtEnvelope:true, contact:contact });
+    }
+    if (window.Palata && Palata.Theater){
+      await Palata.Theater.freeze({ min:1800, max:2800, messages:[
+        'Пересчёт купюр без свидетелей…',
+        'Оформление путёвки в трёх экземплярах…',
+        'Поиск свободной койки в палате №6…'
+      ]});
+    }
+    finish();
+  }
+
+  // ====================================================================
+  // ФИНАЛ
+  // ====================================================================
+  function finish(){
+    var rec = (window.Palata && Palata.Store && recId) ? Palata.Store.get(recId) : null;
+
+    var koyka = 1 + Math.floor(Math.random()*24);
+    var talon = String(101 + Math.floor(Math.random()*899));
+    document.getElementById('palataLine').textContent = 'Палата №6, койка ' + koyka;
+    document.getElementById('talonNo').textContent = '№' + talon;
+
+    var body = document.getElementById('putevkaBody');
+    body.innerHTML = '';
+    function pv(label, val){
+      var row = document.createElement('div'); row.className = 'pv-row';
+      var l = document.createElement('span'); l.textContent = label;          // безопасно
+      var v = document.createElement('b'); v.textContent = (val == null || val === '') ? '—' : String(val); // безопасно
+      row.appendChild(l); row.appendChild(v); body.appendChild(row);
+    }
+    if (rec){
+      pv('Пациент:', rec.fio);
+      pv('Основание:', rec.attendee === 'proxy' ? ('по доверенности от ' + (rec.proxyFor||'?')) : 'прибыл лично');
+      pv('Диагноз:', rec.diagnosis);
+      pv('Дата рождения:', rec.birthDate);
+      pv('Жалобы:', rec.symptoms);
+      pv('Конверт:', rec.broughtEnvelope ? 'принят' : 'не принят');
+      pv('Заявленная сумма:', (rec.amount==null?'—':(rec.amount + ' руб.')));
+      if (rec.contact) pv('Связь:', rec.contact);
+    }
+    pv('Койко-место:', 'палата №6 / койка ' + koyka);
+
+    // САМОЕ ВАЖНОЕ
+    if (window.Palata && Palata.Store && recId){
+      Palata.Store.update(recId, { done:true });
+    }
+
+    showStep('final');
+  }
+
+  // «Следующий пациент» — свежий старт этой же формы для следующего гостя в очереди.
+  document.getElementById('nextPatient').addEventListener('click', function(){
+    location.href = 'palata.html';
+  });
+
+  // ---------- тайный вход в админку (как на index.html) ----------
+  // 6 кликов по гербовой печати ИЛИ по главному заголовку за ~1.2с → admin.html.
+  (function(){
+    var clicks = 0, timer = null;
+    function arm(el){
+      if (!el) return;
+      el.addEventListener('click', function(){
+        clicks++;
+        clearTimeout(timer);
+        timer = setTimeout(function(){ clicks = 0; }, 1200);
+        if (clicks >= 6){ location.href = 'admin.html'; }
+      });
+    }
+    arm(document.getElementById('gerbSeal'));
+    arm(document.getElementById('formTitle'));
+  })();
+
+  // старт
+  showStep(0);
+})();
+</script>
+</body>
+</html>

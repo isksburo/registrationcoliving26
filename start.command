@@ -4,7 +4,7 @@
 set -euo pipefail
 
 PORT=6006
-URL="http://127.0.0.1:${PORT}/index.html"
+URL="http://127.0.0.1:${PORT}/palata.html"
 
 # Папка скрипта (работает и при двойном клике из Finder).
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
