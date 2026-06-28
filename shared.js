@@ -17,6 +17,7 @@
   'use strict';
 
   var KEY = 'palata6_registrations';
+  var TALON_SEQ_KEY = 'palata6_talon_seq';   // монотонный счётчик выданных талонов
 
   // ---- утилиты --------------------------------------------------------------
 
@@ -139,14 +140,32 @@
 
     count: function () { return readRaw().length; },
 
-    // Следующий номер талона — сквозная нумерация для бумажной книги регистратуры.
+    // Peek: какой номер будет выдан следующим (без инкремента).
     nextTalon: function () {
-      var max = 0;
+      var seq = 0;
+      try { seq = parseInt(global.localStorage.getItem(TALON_SEQ_KEY) || '0', 10) || 0; } catch (e) {}
+      var recMax = 0;
       readRaw().forEach(function (r) {
         var n = parseInt(String(r.talon || '').replace(/\D/g, ''), 10);
-        if (!isNaN(n) && n > max) max = n;
+        if (!isNaN(n) && n > recMax) recMax = n;
       });
-      return pad3(max + 1);
+      return pad3(Math.max(seq, recMax) + 1);
+    },
+
+    // Выдать НОВЫЙ номер талона. Монотонный счётчик в localStorage — каждый вызов
+    // даёт уникальный возрастающий номер НЕЗАВИСИМО от того, сохранилась/завершилась
+    // ли запись. Учитываем и max по записям (на случай потери счётчика).
+    issueTalon: function () {
+      var seq = 0;
+      try { seq = parseInt(global.localStorage.getItem(TALON_SEQ_KEY) || '0', 10) || 0; } catch (e) {}
+      var recMax = 0;
+      readRaw().forEach(function (r) {
+        var n = parseInt(String(r.talon || '').replace(/\D/g, ''), 10);
+        if (!isNaN(n) && n > recMax) recMax = n;
+      });
+      var next = Math.max(seq, recMax) + 1;
+      try { global.localStorage.setItem(TALON_SEQ_KEY, String(next)); } catch (e) {}
+      return pad3(next);
     },
 
     remove: function (id) {
@@ -154,7 +173,10 @@
       writeRaw(all);
     },
 
-    clear: function () { writeRaw([]); },
+    clear: function () {
+      writeRaw([]);
+      try { global.localStorage.removeItem(TALON_SEQ_KEY); } catch (e) {}   // сброс нумерации талонов
+    },
 
     // Состав семьи записи; для старых одиночных записей синтезируем одного человека.
     peopleOf: function (r) {

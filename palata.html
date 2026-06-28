@@ -934,7 +934,7 @@
 
     takeBtn.addEventListener('click', function(){
       // присваиваем РЕАЛЬНЫЙ сквозной номер талона (запись создадим на окне №1)
-      talon = (window.Palata && Palata.Store) ? Palata.Store.nextTalon() : String(rnd(1,99));
+      talon = (window.Palata && Palata.Store) ? Palata.Store.issueTalon() : String(rnd(1,99));
       ticketNo.textContent = '№ ' + talon;
       queueBox.style.display = 'block';
       queueNum.textContent = N;
