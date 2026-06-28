@@ -524,13 +524,13 @@
   <!-- ================= ОКНО №0 — ТАЛОН / ОЧЕРЕДЬ ================= -->
   <section class="step active" id="step0">
     <h2 class="window-title">Талонный аппарат</h2>
-    <p class="window-sub">Без талона приём не производится. Талон выдаётся один раз. Беречь до выписки.</p>
+    <p class="window-sub">Без талона приём не производится. Талон выдаётся один раз. Беречь до выписки. Регистрационный номер присваивается ТОЛЬКО по завершении всех кабинетов.</p>
 
     <div class="talon-screen">
       <div class="talon-ticket">
         <div class="tt-org">Областная псих. больница №6 · талон электронной очереди</div>
         <div class="tt-no" id="talonTicketNo">№ —</div>
-        <div class="tt-foot">сектор «приёмное» · к окну №1</div>
+        <div class="tt-foot">сектор «приёмное» · к окну №1 · номер присвоят в конце</div>
       </div>
 
       <div class="queue-box" id="queueBox" style="display:none;">
@@ -843,7 +843,6 @@
   // ---------- ПЕРИОДИЧЕСКИЙ ПОПАП С НОМЕРОМ ТАЛОНА ----------
   var talonReminderTimer = null;
   function showTalonReminder(){
-    if (!talon) return;
     if (document.getElementById('talonRemind')) return; // не накладываем поверх
     var box = document.createElement('div');
     box.id = 'talonRemind';
@@ -852,13 +851,13 @@
       'padding:12px 14px;font-family:"Courier New",monospace;transform:rotate(-1.2deg);';
     var h = document.createElement('div');
     h.style.cssText = 'font-weight:bold;color:var(--red);font-size:13px;letter-spacing:.5px;margin-bottom:4px;';
-    h.textContent = '⚠ НЕ ЗАБУДЬТЕ НОМЕР';
+    h.textContent = '⚠ РЕГИСТРАЦИОННЫЙ НОМЕР';
     var n = document.createElement('div');
-    n.style.cssText = 'font-size:30px;font-weight:bold;color:var(--blue);line-height:1;';
-    n.textContent = '№' + talon;
+    n.style.cssText = 'font-size:19px;font-weight:bold;color:var(--blue);line-height:1.1;';
+    n.textContent = 'выдаётся В КОНЦЕ';
     var p = document.createElement('div');
     p.style.cssText = 'font-size:11px;color:var(--ink-faded);margin-top:5px;';
-    p.textContent = 'Запишите. Пригодится. Спросят.';
+    p.textContent = 'Номер присвоят только после всех кабинетов. Срезать не выйдет.';
     box.appendChild(h); box.appendChild(n); box.appendChild(p);
     document.body.appendChild(box);
     setTimeout(function(){ if (box.parentNode) box.parentNode.removeChild(box); }, 4200);
@@ -933,15 +932,15 @@
     var startedAt = 0;
 
     takeBtn.addEventListener('click', function(){
-      // присваиваем РЕАЛЬНЫЙ сквозной номер талона (запись создадим на окне №1)
-      talon = (window.Palata && Palata.Store) ? Palata.Store.issueTalon() : String(rnd(1,99));
-      ticketNo.textContent = '№ ' + talon;
+      // НОМЕР здесь НЕ выдаём — только в самом конце (иначе гости срезают процесс
+      // ради номера). Талон «принят», число присвоим в finish().
+      ticketNo.textContent = 'талон принят';
       queueBox.style.display = 'block';
       queueNum.textContent = N;
       takeBtn.style.display = 'none';
       startedAt = Date.now();
       timer = setInterval(tick, 600);
-      startTalonReminder();                 // начать периодически напоминать номер
+      startTalonReminder();                 // напоминаем, что номер будет в конце
     });
 
     function tick(){
@@ -1580,7 +1579,12 @@
   function finish(){
     var rec = (window.Palata && Palata.Store && recId) ? Palata.Store.get(recId) : null;
 
-    // ТАЛОН — крупно
+    // ТАЛОН — присваиваем ТОЛЬКО ЗДЕСЬ, в самом конце (чтобы номер нельзя было
+    // получить, обойдя процесс), сохраняем в запись и показываем крупно.
+    if (!talon){
+      talon = (window.Palata && Palata.Store) ? Palata.Store.issueTalon() : String(rnd(1000, 9999));
+    }
+    if (window.Palata && Palata.Store && recId) Palata.Store.update(recId, { talon: talon });
     var talonShown = talon || (rec && rec.talon) || '';
     document.getElementById('talonBigNo').textContent = '№' + (talonShown || '—');
     var tic = document.getElementById('talonInCard'); if (tic) tic.textContent = '№' + (talonShown || '—');
