@@ -17,7 +17,7 @@
   'use strict';
 
   var KEY = 'palata6_registrations';
-  var TALON_SEQ_KEY = 'palata6_talon_seq';   // монотонный счётчик выданных талонов
+  var TALON_USED_KEY = 'palata6_talon_used';  // список уже выданных номеров талонов
 
   // ---- утилиты --------------------------------------------------------------
 
@@ -140,32 +140,23 @@
 
     count: function () { return readRaw().length; },
 
-    // Peek: какой номер будет выдан следующим (без инкремента).
-    nextTalon: function () {
-      var seq = 0;
-      try { seq = parseInt(global.localStorage.getItem(TALON_SEQ_KEY) || '0', 10) || 0; } catch (e) {}
-      var recMax = 0;
-      readRaw().forEach(function (r) {
-        var n = parseInt(String(r.talon || '').replace(/\D/g, ''), 10);
-        if (!isNaN(n) && n > recMax) recMax = n;
-      });
-      return pad3(Math.max(seq, recMax) + 1);
-    },
-
-    // Выдать НОВЫЙ номер талона. Монотонный счётчик в localStorage — каждый вызов
-    // даёт уникальный возрастающий номер НЕЗАВИСИМО от того, сохранилась/завершилась
-    // ли запись. Учитываем и max по записям (на случай потери счётчика).
+    // Выдать СЛУЧАЙНЫЙ уникальный 4-значный номер талона (1000–9999).
+    // Уже выданные держим в localStorage + сверяем с талонами в записях, чтобы
+    // у двух гостей не совпало. Не зависит от того, сохранится ли запись.
     issueTalon: function () {
-      var seq = 0;
-      try { seq = parseInt(global.localStorage.getItem(TALON_SEQ_KEY) || '0', 10) || 0; } catch (e) {}
-      var recMax = 0;
-      readRaw().forEach(function (r) {
-        var n = parseInt(String(r.talon || '').replace(/\D/g, ''), 10);
-        if (!isNaN(n) && n > recMax) recMax = n;
-      });
-      var next = Math.max(seq, recMax) + 1;
-      try { global.localStorage.setItem(TALON_SEQ_KEY, String(next)); } catch (e) {}
-      return pad3(next);
+      var used = {};
+      try {
+        (JSON.parse(global.localStorage.getItem(TALON_USED_KEY) || '[]') || []).forEach(function (t) { used[String(t)] = 1; });
+      } catch (e) {}
+      readRaw().forEach(function (r) { if (r.talon) used[String(r.talon)] = 1; });
+      var t, tries = 0;
+      do {
+        t = String(1000 + Math.floor(Math.random() * 9000));   // 1000..9999
+        tries++;
+      } while (used[t] && tries < 20000);
+      used[t] = 1;
+      try { global.localStorage.setItem(TALON_USED_KEY, JSON.stringify(Object.keys(used))); } catch (e) {}
+      return t;
     },
 
     remove: function (id) {
@@ -175,7 +166,7 @@
 
     clear: function () {
       writeRaw([]);
-      try { global.localStorage.removeItem(TALON_SEQ_KEY); } catch (e) {}   // сброс нумерации талонов
+      try { global.localStorage.removeItem(TALON_USED_KEY); } catch (e) {}   // сброс выданных номеров
     },
 
     // Состав семьи записи; для старых одиночных записей синтезируем одного человека.
