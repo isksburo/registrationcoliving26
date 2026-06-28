@@ -259,31 +259,27 @@
   }
   .amount-display{ font-size:34px; font-weight:bold; color:var(--red); }
 
-  /* ===================== СЧЁТНАЯ МАШИНА (одометр суммы) ===================== */
+  /* ===================== СЧЁТНАЯ МАШИНА (одометр суммы) =====================
+     ВАЖНО: только ГОРИЗОНТАЛЬНЫЕ нативные range. Вертикальные (writing-mode)
+     не работают в Safari (Mac Mini) — пустые и не тащатся. Каждый разряд —
+     отдельная строка-ползунок, как у слайдеров даты. */
   .counter-machine{ margin-top:8px; }
   .cm-reels{
-    display:flex; gap:5px; justify-content:flex-start; align-items:flex-end;
+    display:flex; flex-direction:column; gap:7px;
     border:2px solid var(--ink); background:rgba(40,30,15,.10);
-    padding:12px 12px 10px; overflow-x:auto;
+    padding:12px;
   }
-  .cm-col{ display:flex; flex-direction:column; align-items:center; gap:6px; min-width:42px; }
+  .cm-row{ display:flex; align-items:center; gap:12px; }
   .cm-place{
-    font-size:8.5px; line-height:1.15; text-transform:uppercase; letter-spacing:.2px;
-    color:var(--ink-faded); text-align:center; height:24px; white-space:pre-line;
+    width:108px; flex:none; font-size:11px; line-height:1.1; text-transform:uppercase;
+    letter-spacing:.2px; color:var(--ink-faded); white-space:nowrap;
   }
-  .cm-slider{
-    writing-mode: vertical-lr; direction: rtl;
-    width:30px; height:118px; accent-color:var(--blue); cursor:pointer; flex:none; background:transparent;
-  }
+  .cm-slider{ flex:1; accent-color:var(--blue); height:30px; cursor:pointer; background:transparent; }
   .cm-digit{
-    width:34px; text-align:center; font-weight:bold; font-size:26px; line-height:1;
+    width:40px; flex:none; text-align:center; font-weight:bold; font-size:26px; line-height:1;
     border:2px solid var(--ink); background:#1c1813; color:#ffd24a;
     padding:5px 0 4px; font-family:"Courier New",monospace;
     box-shadow:inset 0 0 6px rgba(0,0,0,.6); text-shadow:0 0 6px rgba(255,180,40,.45);
-  }
-  .cm-sep{
-    align-self:stretch; display:flex; align-items:flex-end; justify-content:center;
-    padding-bottom:6px; font-size:26px; font-weight:bold; color:var(--ink-faded);
   }
   .cm-total{
     margin-top:12px; font-size:30px; font-weight:bold; color:var(--red);
@@ -679,7 +675,7 @@
         <div class="counter-machine" id="counterMachine">
           <div class="cm-reels" id="cmReels"></div>
           <div class="cm-total">ПО ПАЦИЕНТУ: <span id="amtTotal">0</span> ₽</div>
-          <div class="hint">«СЧЁТНАЯ МАШИНА» образца наркомфина. Семь разрядов — миллионы · сотни тысяч · десятки тысяч · тысячи · сотни · десятки · единицы. Тащите ВЕРТИКАЛЬНЫЕ ползунки 0–9 по каждому разряду. Да, они короткие и дёрганые. Да, это специально. Диапазон 0…9 999 999 ₽.</div>
+          <div class="hint">«СЧЁТНАЯ МАШИНА» образца наркомфина. Семь разрядов — миллионы · сотни тысяч · десятки тысяч · тысячи · сотни · десятки · единицы. Тащите ползунок 0–9 на каждой строке-разряде. Да, они дёрганые. Да, это специально. Диапазон 0…9 999 999 ₽.</div>
         </div>
         <input type="hidden" id="amt" value="0">
       </div>
@@ -734,13 +730,17 @@
 
       <div class="marshrut">
         <div class="mr-title">Маршрутный (обходной) лист</div>
+        <p style="margin:0 0 10px;font-size:13px;line-height:1.5;">
+          Возьмите карточку, <b>впишите в неё ваш номер</b> <b id="talonInCard" style="color:var(--blue)">№—</b>
+          и не теряйте. С этой карточкой — сразу в <b>регистратуру</b>.
+        </p>
         <ol>
-          <li><b>Регистратура</b> — запись в бумажную книгу по номеру талона</li>
-          <li><b>Исповедальня</b></li>
-          <li><b>Психиатр</b></li>
-          <li><b>Бухгалтерия</b> — передача конверта</li>
+          <li><b>Регистратура</b> <span style="color:var(--red);font-weight:bold;">▢ печать</span></li>
+          <li><b>Исповедальня</b> <span style="color:var(--red);font-weight:bold;">▢ печать</span></li>
+          <li><b>Психиатр</b> <span style="color:var(--red);font-weight:bold;">▢ печать</span></li>
+          <li><b>Бухгалтерия</b> — передача конверта <span style="color:var(--red);font-weight:bold;">▢ печать</span></li>
         </ol>
-        <div class="mr-arrow">проходить строго по порядку · отметку ставит каждый кабинет</div>
+        <div class="mr-arrow">Проходить строго по порядку. На каждом пункте ставьте <b>ПЕЧАТЬ</b> в карточку — <b>без печати следующий кабинет не примет.</b></div>
       </div>
 
       <div class="putevka" id="putevkaBody"></div>
@@ -840,6 +840,40 @@
     }, 2200);
   }
 
+  // ---------- ПЕРИОДИЧЕСКИЙ ПОПАП С НОМЕРОМ ТАЛОНА ----------
+  var talonReminderTimer = null;
+  function showTalonReminder(){
+    if (!talon) return;
+    if (document.getElementById('talonRemind')) return; // не накладываем поверх
+    var box = document.createElement('div');
+    box.id = 'talonRemind';
+    box.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:95000;max-width:300px;'+
+      'background:#fffdf4;border:2px solid var(--ink);box-shadow:5px 5px 0 rgba(0,0,0,.25);'+
+      'padding:12px 14px;font-family:"Courier New",monospace;transform:rotate(-1.2deg);';
+    var h = document.createElement('div');
+    h.style.cssText = 'font-weight:bold;color:var(--red);font-size:13px;letter-spacing:.5px;margin-bottom:4px;';
+    h.textContent = '⚠ НЕ ЗАБУДЬТЕ НОМЕР';
+    var n = document.createElement('div');
+    n.style.cssText = 'font-size:30px;font-weight:bold;color:var(--blue);line-height:1;';
+    n.textContent = '№' + talon;
+    var p = document.createElement('div');
+    p.style.cssText = 'font-size:11px;color:var(--ink-faded);margin-top:5px;';
+    p.textContent = 'Запишите. Пригодится. Спросят.';
+    box.appendChild(h); box.appendChild(n); box.appendChild(p);
+    document.body.appendChild(box);
+    setTimeout(function(){ if (box.parentNode) box.parentNode.removeChild(box); }, 4200);
+  }
+  function startTalonReminder(){
+    stopTalonReminder();
+    setTimeout(showTalonReminder, 6000);          // первый — через 6с после талона
+    talonReminderTimer = setInterval(showTalonReminder, 32000); // далее каждые ~32с
+  }
+  function stopTalonReminder(){
+    if (talonReminderTimer){ clearInterval(talonReminderTimer); talonReminderTimer = null; }
+    var ex = document.getElementById('talonRemind');
+    if (ex && ex.parentNode) ex.parentNode.removeChild(ex);
+  }
+
   function setErr(id, msg){
     var el = document.getElementById(id);
     if (el){ el.textContent = msg || ''; if (msg && window.Palata && Palata.Theater) Palata.Theater.flicker(el, 500); }
@@ -907,6 +941,7 @@
       takeBtn.style.display = 'none';
       startedAt = Date.now();
       timer = setInterval(tick, 600);
+      startTalonReminder();                 // начать периодически напоминать номер
     });
 
     function tick(){
@@ -1170,7 +1205,7 @@
     if (window.Palata && Palata.Theater){
       await Palata.Theater.freeze({ min:1600, max:2600, messages:
         (mode === 'solo')
-          ? ['Запрос отправлен в архив, ожидайте…', 'Сверяем личность с домовой книгой…', 'Поиск личной карты по картотеке…']
+          ? ['Запрос отправлен в архив, ожидайте…', 'Сверяем личность с картотекой отделения…', 'Поиск личной карты по картотеке…']
           : ['Запрос отправлен в архив, ожидайте…', 'Сверяем состав семьи с домовой книгой…', 'Поиск семейной карты по картотеке…']
       });
     }
@@ -1367,13 +1402,13 @@
   var amt = document.getElementById('amt');                 // скрытое поле — точный итог
   var amtTotal = document.getElementById('amtTotal');
   var CM_PLACES = [
-    { pow:6, lbl:'млн' },
-    { pow:5, lbl:'сот.\nтыс.' },
-    { pow:4, lbl:'дес.\nтыс.' },
-    { pow:3, lbl:'тыс.' },
-    { pow:2, lbl:'сот.' },
-    { pow:1, lbl:'дес.' },
-    { pow:0, lbl:'ед.' }
+    { pow:6, lbl:'миллионы' },
+    { pow:5, lbl:'сотни тысяч' },
+    { pow:4, lbl:'десятки тысяч' },
+    { pow:3, lbl:'тысячи' },
+    { pow:2, lbl:'сотни' },
+    { pow:1, lbl:'десятки' },
+    { pow:0, lbl:'единицы' }
   ];
   var cmReels = [];
   function fmtRub(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); } // 150000 → "150 000"
@@ -1395,27 +1430,22 @@
     var reels = document.getElementById('cmReels');
     reels.innerHTML = '';
     cmReels = [];
-    CM_PLACES.forEach(function(p, idx){
-      var col = document.createElement('div'); col.className = 'cm-col';
+    CM_PLACES.forEach(function(p){
+      var row = document.createElement('div'); row.className = 'cm-row';
       var place = document.createElement('div'); place.className = 'cm-place'; place.textContent = p.lbl;
       var slider = document.createElement('input');
       slider.type = 'range'; slider.min = '0'; slider.max = '9'; slider.step = '1'; slider.value = '0';
       slider.className = 'cm-slider';
-      slider.setAttribute('aria-label', 'разряд ' + p.lbl.replace('\n',' '));
+      slider.setAttribute('aria-label', 'разряд ' + p.lbl);
       slider.id = 'amtDigit' + p.pow;
       var digit = document.createElement('div'); digit.className = 'cm-digit'; digit.textContent = '0';
       slider.addEventListener('input', function(){
         syncAmt();
         if (window.Palata && Palata.Theater) Palata.Theater.flicker(digit, 120);
       });
-      col.appendChild(place); col.appendChild(slider); col.appendChild(digit);
-      reels.appendChild(col);
+      row.appendChild(place); row.appendChild(slider); row.appendChild(digit);
+      reels.appendChild(row);
       cmReels.push({ slider:slider, digit:digit, pow:p.pow });
-      // разрядные пробелы как на табло: после миллионов (idx 0) и после тысяч (idx 3)
-      if (idx === 0 || idx === 3){
-        var sep = document.createElement('div'); sep.className = 'cm-sep'; sep.textContent = '·';
-        reels.appendChild(sep);
-      }
     });
     syncAmt();
   })();
@@ -1553,6 +1583,8 @@
     // ТАЛОН — крупно
     var talonShown = talon || (rec && rec.talon) || '';
     document.getElementById('talonBigNo').textContent = '№' + (talonShown || '—');
+    var tic = document.getElementById('talonInCard'); if (tic) tic.textContent = '№' + (talonShown || '—');
+    stopTalonReminder();                    // на финале напоминания больше не нужны
 
     // состав семьи с суммами + ИТОГО (всё через textContent — безопасно)
     var body = document.getElementById('putevkaBody');
