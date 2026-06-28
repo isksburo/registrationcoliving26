@@ -353,6 +353,86 @@
   .consent-box label{ cursor:pointer; display:flex; gap:9px; align-items:flex-start; }
   .consent-box input{ margin-top:3px; transform:scale(1.2); }
 
+  /* ===================== СОСТАВ СЕМЬИ (окно №1) ===================== */
+  .people-list{ margin:6px 0 12px; }
+  .person-row{
+    display:flex; align-items:center; gap:10px; margin-bottom:10px;
+    border-bottom:1px dotted var(--line); padding-bottom:9px;
+  }
+  .person-no{ font-weight:bold; font-size:14px; width:24px; flex:none; text-align:right; }
+  .person-fio{ flex:1; }
+  .person-del{
+    flex:none; font-family:"Courier New",monospace; cursor:pointer;
+    border:2px solid var(--ink); background:#cabf9d; color:var(--ink);
+    width:32px; height:32px; font-size:14px; line-height:1; padding:0;
+    box-shadow:2px 2px 0 rgba(0,0,0,.3);
+  }
+  .person-del:active{ transform:translate(2px,2px); box-shadow:none; }
+  .person-del[disabled]{ opacity:.32; cursor:not-allowed; box-shadow:none; }
+  #addPerson[disabled]{ opacity:.4; cursor:not-allowed; }
+
+  /* ===================== КАССА ПО ПАЦИЕНТАМ (окно №4) ===================== */
+  .cashier-head{
+    font-size:15px; border:2px solid var(--ink); background:rgba(28,63,143,.08);
+    padding:9px 12px; margin-bottom:12px; letter-spacing:.5px;
+  }
+  .cashier-head b{ color:var(--blue); }
+  .running-total{
+    margin-top:12px; font-size:15px; border-top:1px dotted var(--line); padding-top:8px;
+  }
+  .running-total b{ font-size:19px; color:var(--red); }
+
+  /* ===================== ФИНАЛ: ТАЛОН + ОБХОДНОЙ ЛИСТ ===================== */
+  .talon-big{
+    border:5px solid var(--ink); background:rgba(255,255,255,.30);
+    padding:16px 18px 18px; margin:6px auto 20px; max-width:520px;
+    box-shadow:0 0 0 4px rgba(0,0,0,.10), inset 0 0 30px rgba(120,95,40,.14);
+  }
+  .talon-big .tb-label{
+    font-size:14px; letter-spacing:5px; text-transform:uppercase; color:var(--ink-faded);
+  }
+  .talon-big .tb-no{
+    font-size:74px; font-weight:bold; letter-spacing:4px; line-height:1.05;
+    color:var(--red); text-shadow:2px 2px 0 rgba(156,31,31,.2); margin:2px 0 8px;
+  }
+  .talon-big .tb-note{ font-size:12.5px; color:var(--ink); line-height:1.55; font-weight:bold; }
+
+  .marshrut{
+    border:2px solid var(--ink); background:rgba(255,255,255,.20);
+    padding:14px 18px 16px; margin:0 auto 20px; max-width:520px; text-align:left;
+  }
+  .marshrut .mr-title{
+    font-size:13px; font-weight:bold; text-transform:uppercase; letter-spacing:2px;
+    border-bottom:2px solid var(--ink); padding-bottom:6px; margin-bottom:10px; text-align:center;
+  }
+  .marshrut ol{ margin:0; padding:0; list-style:none; counter-reset:mr; }
+  .marshrut li{
+    counter-increment:mr; position:relative; padding:8px 6px 8px 42px;
+    border-bottom:1px dotted var(--line); font-size:13px; line-height:1.45;
+  }
+  .marshrut li:last-child{ border-bottom:none; }
+  .marshrut li::before{
+    content:counter(mr); position:absolute; left:0; top:6px;
+    width:27px; height:27px; border:2px solid var(--ink); border-radius:50%;
+    text-align:center; line-height:24px; font-weight:bold; font-size:13px;
+    background:rgba(255,255,255,.4);
+  }
+  .marshrut li b{ text-transform:uppercase; letter-spacing:1px; }
+  .marshrut .mr-arrow{ text-align:center; font-size:11px; color:var(--ink-faded); margin-top:9px; font-style:italic; }
+
+  .buh-hours{
+    border:2px dashed var(--red); background:rgba(156,31,31,.05);
+    padding:14px 16px; margin:0 auto 20px; max-width:520px; text-align:left;
+    font-size:12px; line-height:1.65;
+  }
+  .buh-hours .bh-title{
+    font-weight:bold; text-transform:uppercase; letter-spacing:1px; color:var(--red);
+    margin-bottom:8px; font-size:12.5px;
+  }
+  .buh-hours ul{ margin:6px 0; padding-left:18px; }
+  .buh-hours li{ margin-bottom:4px; }
+  .buh-hours .bh-foot{ font-style:italic; color:var(--ink-faded); margin-top:8px; }
+
   /* ===================== ФИНАЛ ===================== */
   .final{ text-align:center; padding:14px 6px; }
   .final-stamp{
@@ -459,39 +539,25 @@
     </div>
   </section>
 
-  <!-- ================= ОКНО №1 — РЕГИСТРАТУРА ================= -->
+  <!-- ================= ОКНО №1 — РЕГИСТРАТУРА (СОСТАВ СЕМЬИ) ================= -->
   <section class="step" id="step1">
     <h2 class="window-title">Окно №1 · Регистратура</h2>
-    <p class="window-sub">Заполняется лично пациентом разборчивым почерком. Исправления не допускаются.</p>
+    <p class="window-sub">Оформляется вся семья по одному талону. Заполняется разборчивым почерком. Исправления не допускаются.</p>
 
     <fieldset>
-      <legend>Сведения о пациенте</legend>
-      <div class="three-fio">
-        <label class="row">
-          <span class="lbl">Фамилия <span class="req">*</span></span>
-          <input type="text" id="lastName" autocomplete="off">
-          <span class="hint">Регистр букв выставляется автоматически по ГОСТ-6. Не спорьте с аппаратом.</span>
-        </label>
-        <label class="row">
-          <span class="lbl">Имя <span class="req">*</span></span>
-          <input type="text" id="firstName" autocomplete="off">
-          <span class="hint">Поле работает по протоколу задержки. Символы появляются позже. Это нормально.</span>
-        </label>
-        <label class="row">
-          <span class="lbl">Отчество <span class="req">*</span></span>
-          <input type="text" id="middleName" autocomplete="off">
-          <span class="hint">Отчество обязательно. Отсутствие отчества — основание для отказа в приёме.</span>
-        </label>
-      </div>
-      <div class="hint">Внесение данных копированием недопустимо (приказ №6). Вставка, перетаскивание и контекстное меню заблокированы.</div>
+      <legend>Состав семьи (пациенты)</legend>
+      <p class="hint" style="margin-top:0;">Внесите каждого пациента отдельной строкой. До шести человек на один талон. Первым указывается старший пациент.</p>
+      <div class="people-list" id="peopleList"></div>
+      <button type="button" class="btn next" id="addPerson">➕ Внести ещё пациента</button>
+      <div class="hint">Поле ФИО: регистр букв выставляется автоматически по ГОСТ-6 (не спорьте с аппаратом). Внесение данных копированием недопустимо (приказ №6) — вставка, перетаскивание и контекстное меню заблокированы.</div>
       <div class="field-err" id="err1fio"></div>
     </fieldset>
 
     <fieldset>
-      <legend>Основание прибытия</legend>
+      <legend>Кто оформляет</legend>
       <div class="radios runaway" id="attendeeRadios">
-        <label><input type="radio" name="attendee" value="self"> Прибыл(а) ЛИЧНО, по собственному недомыслию</label>
-        <label><input type="radio" name="attendee" value="proxy"> Прибыл(а) ПО ДОВЕРЕННОСТИ за другое лицо</label>
+        <label><input type="radio" name="attendee" value="self"> Оформляю ЛИЧНО, по собственному недомыслию</label>
+        <label><input type="radio" name="attendee" value="proxy"> Оформляю ПО ДОВЕРЕННОСТИ за семью</label>
       </div>
       <label class="row" id="proxyWrap" style="display:none; margin-top:12px;">
         <span class="lbl">От кого доверенность (ФИО доверителя) <span class="req">*</span></span>
@@ -511,14 +577,14 @@
   <!-- ================= ОКНО №2 — ВРАЧ ================= -->
   <section class="step" id="step2">
     <h2 class="window-title">Окно №2 · Дежурный врач</h2>
-    <p class="window-sub">Осмотр производится заочно. Симптомы записываются со слов санитара.</p>
+    <p class="window-sub">Осмотр производится заочно, на всю семью сразу. Симптомы записываются со слов санитара.</p>
 
     <fieldset>
-      <legend>Предварительный диагноз</legend>
+      <legend>Семейный диагноз (один на всю семью)</legend>
       <label class="row" style="margin-bottom:6px;">
-        <span class="lbl">Поиск по справочнику диагнозов <span class="req">*</span></span>
+        <span class="lbl">Поиск по справочнику семейных диагнозов <span class="req">*</span></span>
         <input type="text" id="diagSearch" autocomplete="off" placeholder="печатайте — и нужное спрячется…">
-        <span class="hint">Справочник работает по реверс-протоколу: при наборе СОВПАДЕНИЯ скрываются. Чтобы выбрать — найдите глазами и щёлкните.</span>
+        <span class="hint">Справочник работает по реверс-протоколу: при наборе СОВПАДЕНИЯ скрываются. Чтобы выбрать — найдите глазами и щёлкните. Диагноз ставится коллективно, на всю семью.</span>
       </label>
       <div class="diag-list" id="diagList"></div>
       <div class="diag-chosen">Выбрано: <b id="diagChosen">— ничего —</b></div>
@@ -526,7 +592,7 @@
     </fieldset>
 
     <fieldset>
-      <legend>Дата рождения (высокоточными регуляторами)</legend>
+      <legend>Дата рождения СТАРШЕГО пациента (высокоточными регуляторами)</legend>
       <div class="sl-row"><span class="sl-tag">Число</span><input type="range" id="sd" min="1" max="31" value="15"><span class="sl-val" id="sdv">15</span></div>
       <div class="sl-row"><span class="sl-tag">Месяц</span><input type="range" id="sm" min="1" max="12" value="6"><span class="sl-val" id="smv">6</span></div>
       <div class="sl-row"><span class="sl-tag">Год</span><input type="range" id="sy" min="1920" max="2010" value="1965"><span class="sl-val" id="syv">1965</span></div>
@@ -536,11 +602,11 @@
     </fieldset>
 
     <fieldset>
-      <legend>Жалобы и симптомы</legend>
+      <legend>Жалобы семьи (необязательно)</legend>
       <label class="row">
-        <span class="lbl">Опишите жалобы (со слов) <span class="req">*</span></span>
-        <textarea id="symptoms" placeholder="Например: слышит голоса заведующего; считает себя коливером; пишет код по ночам…"></textarea>
-        <span class="hint">Не менее пяти слов. Краткость — признак скрытности.</span>
+        <span class="lbl">Опишите жалобы семьи (со слов)</span>
+        <textarea id="symptoms" placeholder="Например: всей семьёй слышат голоса заведующего; коллективно считают себя коливерами; пишут код по ночам…"></textarea>
+        <span class="hint">Поле необязательное. Можно оставить пустым — санитар допишет сам.</span>
       </label>
       <div class="field-err" id="err2symp"></div>
     </fieldset>
@@ -570,65 +636,54 @@
     </div>
   </section>
 
-  <!-- ================= ОКНО №4 — ГЛАВБУХ ================= -->
+  <!-- ================= ОКНО №4 — ГЛАВБУХ (СУММА ПО КАЖДОМУ) ================= -->
   <section class="step" id="step4">
     <h2 class="window-title">Окно №4 · Главный бухгалтер</h2>
-    <p class="window-sub">Касса работает по настроению. Сдачи нет. Чек не предусмотрен формой.</p>
+    <p class="window-sub">Касса работает по настроению. Сдачи нет. Чек не предусмотрен формой. Взнос назначается по каждому пациенту отдельно.</p>
 
-    <fieldset>
-      <legend>Конверт и взнос</legend>
+    <!-- 4А — взнос по текущему пациенту -->
+    <fieldset id="cashierPatient">
+      <legend>Взнос по пациенту</legend>
+      <div class="cashier-head">Пациент <b id="payIndex">1</b> из <b id="payCount">1</b>: <b id="payName">—</b></div>
       <div class="row">
-        <span class="lbl">Заявленная сумма в конверте (руб.) <span class="req">*</span></span>
+        <span class="lbl">Заявленная сумма по этому пациенту (руб.) <span class="req">*</span></span>
         <div class="counter-machine" id="counterMachine">
           <div class="cm-reels" id="cmReels"></div>
-          <div class="cm-total">ИТОГО: <span id="amtTotal">0</span> ₽</div>
+          <div class="cm-total">ПО ПАЦИЕНТУ: <span id="amtTotal">0</span> ₽</div>
           <div class="hint">«СЧЁТНАЯ МАШИНА» образца наркомфина. Семь разрядов — миллионы · сотни тысяч · десятки тысяч · тысячи · сотни · десятки · единицы. Тащите ВЕРТИКАЛЬНЫЕ ползунки 0–9 по каждому разряду. Да, они короткие и дёрганые. Да, это специально. Диапазон 0…9 999 999 ₽.</div>
         </div>
         <input type="hidden" id="amt" value="0">
       </div>
-
-      <div class="row" style="margin-top:10px;">
-        <span class="lbl">Состояние конверта <span class="req">*</span></span>
-        <div class="radios">
-          <label><input type="radio" name="envState" value="open"> Конверт НЕзапечатан (по регламенту)</label>
-          <label><input type="radio" name="envState" value="sealed"> Конверт запечатан</label>
-        </div>
-        <span class="hint">По регламенту приёмки конверт должен быть НЕзапечатан.</span>
+      <div class="running-total">Внесено по семье: <b id="runningTotal">0</b> ₽</div>
+      <div class="field-err" id="err4amt"></div>
+      <div class="nav">
+        <span></span>
+        <button type="button" class="btn next" id="payNext">Записать и далее ▸</button>
       </div>
-      <div class="field-err" id="err4env"></div>
-
-      <label class="chk" style="margin-top:6px;">
-        <input type="checkbox" id="envHanded">
-        <span>Конверт передан в окно лично в руки бухгалтеру <span class="req">*</span></span>
-      </label>
-      <div class="field-err" id="err4handed"></div>
     </fieldset>
 
-    <fieldset>
-      <legend>Обратная связь</legend>
-      <label class="row">
+    <!-- 4Б — контакт, согласие, оформление семьи -->
+    <fieldset id="cashierFinal" style="display:none;">
+      <legend>Завершение оформления семьи</legend>
+      <div class="cm-total" style="margin-top:0;">ИТОГО ПО СЕМЬЕ: <span id="familyTotal">0</span> ₽</div>
+
+      <label class="row" style="margin-top:14px;">
         <span class="lbl">Контакт для уведомления о выписке (телеграм)</span>
         <input type="text" id="contact" autocomplete="off" placeholder="@username">
         <span class="hint">Указывается добровольно-принудительно. Вставка недопустима (приказ №6).</span>
       </label>
-    </fieldset>
 
-    <fieldset>
-      <legend>Согласие на госпитализацию</legend>
       <div class="consent-box">
         <label>
           <input type="checkbox" id="consent">
-          <span>Я <b>НЕ</b> против того, чтобы <b>не</b> отказываться от госпитализации, и <b>не</b> подтверждаю, что я <b>не</b> согласен(на). Поставьте галочку, если всё ясно.</span>
+          <span>Я <b>НЕ</b> против того, чтобы <b>не</b> отказываться от госпитализации семьи, и <b>не</b> подтверждаю, что я <b>не</b> согласен(на). Поставьте галочку, если всё ясно.</span>
         </label>
       </div>
       <div class="field-err" id="err4consent"></div>
-    </fieldset>
 
-    <fieldset>
-      <legend>Завершение оформления</legend>
-      <p class="hint" style="margin-top:0;">Нажмите кнопку «ГОСПИТАЛИЗИРОВАТЬ». Она немного нервная — убегает от курсора, но после нескольких попыток замирает.</p>
+      <p class="hint">Нажмите кнопку «ОФОРМИТЬ СЕМЬЮ». Она немного нервная — убегает от курсора, но после нескольких попыток замирает.</p>
       <div class="final-zone" id="finalZone">
-        <button type="button" class="btn-hospital" id="btnHospital">ГОСПИТАЛИЗИРОВАТЬ</button>
+        <button type="button" class="btn-hospital" id="btnHospital">ОФОРМИТЬ СЕМЬЮ</button>
       </div>
       <div class="spare-link" style="margin-top:10px;">
         <a href="#" id="forceSubmit">(служебный вход: оформить без беготни)</a>
@@ -637,21 +692,48 @@
     </fieldset>
   </section>
 
-  <!-- ================= ВЫДАЧА — ФИНАЛ ================= -->
+  <!-- ================= ВЫДАЧА — ПУТЁВКА / ОБХОДНОЙ ЛИСТ ================= -->
   <section class="step" id="stepFinal">
     <div class="final">
       <div class="final-stamp">ПУТЁВКА ВЫДАНА</div>
-      <div class="talon-corner">талон<br><b id="talonNo">№000</b></div>
 
-      <div class="palata-big" id="palataLine">Палата №6, койка ?</div>
+      <div class="talon-big">
+        <div class="tb-label">ваш талон</div>
+        <div class="tb-no" id="talonBigNo">№—</div>
+        <div class="tb-note">Назовите этот номер в РЕГИСТРАТУРЕ. Без талона приём не ведётся.</div>
+      </div>
+
+      <div class="marshrut">
+        <div class="mr-title">Маршрутный (обходной) лист</div>
+        <ol>
+          <li><b>Регистратура</b> — запись в бумажную книгу по номеру талона</li>
+          <li><b>Исповедальня</b></li>
+          <li><b>Психиатр</b></li>
+          <li><b>Бухгалтерия</b> — передача конверта</li>
+        </ol>
+        <div class="mr-arrow">проходить строго по порядку · отметку ставит каждый кабинет</div>
+      </div>
 
       <div class="putevka" id="putevkaBody"></div>
 
+      <div class="buh-hours">
+        <div class="bh-title">Передача конверта в бухгалтерию</div>
+        Подготовьте наличные в конверте (незапечатанном). Передать строго в БУХГАЛТЕРИЮ (каб. 6½) в часы приёма конвертов:
+        <ul>
+          <li>по чётным числам: с 12:00 до 12:40 и с 13:50, кроме плавающего обеда;</li>
+          <li>по нечётным: в течение второго перерыва (о времени второго перерыва справляться у первого перерыва);</li>
+          <li>талоны с чётной суммой принимаются после талонов с нечётной;</li>
+          <li>при себе: конверт, талон и сопроводительная улыбка;</li>
+          <li>опоздавшие ожидают следующий приём;</li>
+          <li>часы приёма могут быть изменены задним числом без уведомления.</li>
+        </ul>
+        <div class="bh-foot">Точное время уточняйте у бухгалтера в момент, когда он отойдёт.</div>
+      </div>
+
       <div class="final-text">
-        Поздравляем! Вы официально оформлены приёмным отделением. Сопротивление бесполезно
+        Поздравляем! Семья официально оформлена приёмным отделением. Сопротивление бесполезно
         и зафиксировано в карте. Тапочки выдаются на втором этаже под роспись.
-        Передачи принимаются по чётным. Голоса — по нечётным.
-        Добро пожаловать в коллектив.
+        Передачи принимаются по чётным. Голоса — по нечётным. Добро пожаловать в коллектив.
       </div>
 
       <button type="button" class="btn big primary" id="nextPatient">Следующий пациент ▸</button>
@@ -687,8 +769,33 @@
 
   // ---------- состояние ----------
   var recId = null;
-  var selectedDiagnosis = '';
+  var talon = '';                       // реальный сквозной номер талона (присвоен на окне №0)
+  var people = [];                      // состав семьи [{ fio, birthDate, amount }] — источник правды
+  var selectedFamilyDiagnosis = '';     // один диагноз на всю семью
   var submitting = false;
+  var MAX_PEOPLE = 6;
+
+  // ---------- издевательство B: запрет вставки/перетаскивания/контекстного меню ----------
+  function noPaste(el){
+    ['paste','drop','contextmenu'].forEach(function(ev){
+      el.addEventListener(ev, function(e){ e.preventDefault(); });
+    });
+  }
+  // ---------- издевательство A: регистр-саботаж (меняет регистр каждого вводимого символа) ----------
+  function caseSaboteur(input){
+    input.addEventListener('keydown', function(e){
+      if (e.ctrlKey || e.metaKey || e.altKey) return;   // не мешаем хоткеям
+      if (e.key == null || e.key.length !== 1) return;   // только печатные символы
+      e.preventDefault();
+      var c = e.key;
+      var swapped = (c === c.toUpperCase()) ? c.toLowerCase() : c.toUpperCase();
+      var start = input.selectionStart, end = input.selectionEnd;
+      var v = input.value;
+      input.value = v.slice(0, start) + swapped + v.slice(end);
+      var pos = start + 1;
+      try { input.setSelectionRange(pos, pos); } catch(_){}
+    });
+  }
 
   // ---------- ТОСТ ----------
   function toast(msg){
@@ -762,7 +869,9 @@
     var startedAt = 0;
 
     takeBtn.addEventListener('click', function(){
-      ticketNo.textContent = '№ ' + (140 + rnd(1,59));
+      // присваиваем РЕАЛЬНЫЙ сквозной номер талона (запись создадим на окне №1)
+      talon = (window.Palata && Palata.Store) ? Palata.Store.nextTalon() : String(rnd(1,99));
+      ticketNo.textContent = '№ ' + talon;
       queueBox.style.display = 'block';
       queueNum.textContent = N;
       takeBtn.style.display = 'none';
@@ -794,38 +903,69 @@
   })();
 
   // ====================================================================
-  // ОКНО №1 — РЕГИСТРАТУРА
+  // ОКНО №1 — РЕГИСТРАТУРА (СОСТАВ СЕМЬИ)
   // ====================================================================
-  var lastName  = document.getElementById('lastName');
-  var firstName = document.getElementById('firstName');
-  var middleName= document.getElementById('middleName');
+  var peopleList = document.getElementById('peopleList');
+  var addPersonBtn = document.getElementById('addPerson');
 
-  // --- издевательство B: запрет вставки/перетаскивания/контекстного меню ---
-  function noPaste(el){
-    ['paste','drop','contextmenu'].forEach(function(ev){
-      el.addEventListener(ev, function(e){ e.preventDefault(); });
+  // создаём запись СРАЗУ, как только есть хоть один ФИО (реальные данные — святое)
+  function ensureRecord(){
+    if (recId) return;
+    if (window.Palata && Palata.Store){
+      recId = Palata.Store.create({ skin:'palata', talon: talon });
+    }
+  }
+
+  function renumberPeople(){
+    var rows = peopleList.querySelectorAll('.person-row');
+    Array.prototype.forEach.call(rows, function(row, i){
+      row.querySelector('.person-no').textContent = (i + 1) + '.';
+      row.querySelector('.person-del').disabled = (rows.length <= 1);
+    });
+    addPersonBtn.disabled = (rows.length >= MAX_PEOPLE);
+  }
+
+  function addPersonRow(){
+    var rows = peopleList.querySelectorAll('.person-row');
+    if (rows.length >= MAX_PEOPLE) return;
+    var row = document.createElement('div');
+    row.className = 'person-row';
+
+    var no = document.createElement('span');
+    no.className = 'person-no'; no.textContent = (rows.length + 1) + '.';
+
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.className = 'person-fio'; inp.autocomplete = 'off';
+    inp.placeholder = 'Фамилия Имя Отчество';
+    noPaste(inp);        // издевательство B: запрет вставки
+    caseSaboteur(inp);   // издевательство A: регистр-саботаж (как у фамилии)
+    // как только в любой строке появился ФИО — заводим запись в Store
+    inp.addEventListener('keyup', function(){ if (inp.value.trim()) ensureRecord(); });
+
+    var del = document.createElement('button');
+    del.type = 'button'; del.className = 'person-del'; del.textContent = '✕';
+    del.title = 'удалить пациента';
+    del.addEventListener('click', function(){
+      if (peopleList.querySelectorAll('.person-row').length <= 1) return;
+      peopleList.removeChild(row);
+      renumberPeople();
+    });
+
+    row.appendChild(no); row.appendChild(inp); row.appendChild(del);
+    peopleList.appendChild(row);
+    renumberPeople();
+  }
+  addPersonBtn.addEventListener('click', addPersonRow);
+  addPersonRow();   // стартовая строка — один пациент
+
+  function collectPeople(){
+    var rows = peopleList.querySelectorAll('.person-row');
+    return Array.prototype.map.call(rows, function(row){
+      return { fio: row.querySelector('.person-fio').value.trim(), birthDate:'', amount:null };
     });
   }
-  [lastName, firstName, middleName].forEach(noPaste);
 
-  // --- издевательство A: регистр-саботаж на Фамилии ---
-  lastName.addEventListener('keydown', function(e){
-    if (e.ctrlKey || e.metaKey || e.altKey) return;   // не мешаем хоткеям
-    if (e.key == null || e.key.length !== 1) return;   // только печатные символы
-    e.preventDefault();
-    var c = e.key;
-    var swapped = (c === c.toUpperCase()) ? c.toLowerCase() : c.toUpperCase();
-    var start = lastName.selectionStart, end = lastName.selectionEnd;
-    var v = lastName.value;
-    lastName.value = v.slice(0, start) + swapped + v.slice(end);
-    var pos = start + 1;
-    try { lastName.setSelectionRange(pos, pos); } catch(_){}
-  });
-
-  // --- издевательство: имя с лагом (перенос из inyerface) ---
-  if (window.Palata && Palata.Theater) Palata.Theater.lagInput(firstName, 230);
-
-  // --- издевательство C: разбегающиеся radio ---
+  // --- издевательство C: разбегающиеся radio «кто оформляет» ---
   (function(){
     var box = document.getElementById('attendeeRadios');
     var hovers = 0, calmed = false;
@@ -877,16 +1017,17 @@
 
   go1.addEventListener('click', async function(){
     clearErrs(['err1fio','err1att']);
-    var ln = lastName.value.trim();
-    var fn = firstName.value.trim();
-    var mn = middleName.value.trim();
+    var ppl = collectPeople();
     var ok = true;
 
-    if (!ln || !fn){ setErr('err1fio','Фамилия и имя обязательны к заполнению.'); ok = false; }
-    else if (!mn){ setErr('err1fio','Отчество обязательно. Нет отчества — нет приёма (впишите хоть что-нибудь).'); ok = false; }
+    if (!ppl.length || !ppl[0].fio){
+      setErr('err1fio','Внесите хотя бы одного пациента (ФИО первого пациента обязательно).'); ok = false;
+    } else if (!ppl.every(function(p){ return p.fio; })){
+      setErr('err1fio','Заполните ФИО каждого пациента или удалите пустую строку.'); ok = false;
+    }
 
     var att = (document.querySelector('input[name="attendee"]:checked')||{}).value || '';
-    if (!att){ setErr('err1att','Укажите основание прибытия.'); ok = false; }
+    if (!att){ setErr('err1att','Укажите, кто оформляет.'); ok = false; }
     var proxyFor = '';
     if (att === 'proxy'){
       proxyFor = document.getElementById('proxyFor').value.trim();
@@ -900,20 +1041,20 @@
       return;
     }
 
-    var fio = (ln + ' ' + fn + ' ' + mn).trim();
+    people = ppl;
 
     // --- СНАЧАЛА молча сохраняем реальные данные ---
-    if (window.Palata && Palata.Store){
-      if (!recId) recId = Palata.Store.create({ skin:'palata' });
-      Palata.Store.update(recId, { fio:fio, attendee:att, proxyFor:proxyFor });
+    ensureRecord();
+    if (window.Palata && Palata.Store && recId){
+      Palata.Store.update(recId, { people: people, attendee: att, proxyFor: proxyFor });
     }
 
     // --- ПОТОМ театр ---
     if (window.Palata && Palata.Theater){
       await Palata.Theater.freeze({ min:1600, max:2600, messages:[
         'Запрос отправлен в архив, ожидайте…',
-        'Сверяем ФИО с домовой книгой…',
-        'Поиск карты по картотеке (буква «'+esc(ln.charAt(0)||'?')+'»)…'
+        'Сверяем состав семьи с домовой книгой…',
+        'Поиск семейной карты по картотеке…'
       ]});
     }
     showStep(2);
@@ -922,24 +1063,21 @@
   // ====================================================================
   // ОКНО №2 — ВРАЧ
   // ====================================================================
-  // --- издевательство F: поиск-наоборот по диагнозам ---
+  // --- издевательство F: поиск-наоборот по СЕМЕЙНЫМ диагнозам ---
   var DIAGNOSES = [
-    'Вялотекущая шизофрения опен-спейса',
-    'Маниакально-депрессивный коворкинг',
-    'Острый синдром самозванца',
-    'Биполярное расстройство дедлайна',
-    'Паранойя по поводу общей кухни',
-    'Кататонический энтузиазм неясного генеза',
-    'Невроз навязчивого бронирования',
-    'Делирий продуктивности',
-    'Истерическая любовь к чаепитиям',
-    'Обсессивно-компульсивная уборка чужого',
-    'Аффективное расстройство вай-фая',
-    'Деменция групповых чатов',
-    'Фобия пустого холодильника (коммунальная)',
-    'Хронический эскапизм в коливинг',
-    'Расщепление личности удалёнщика',
-    'Синдром вечного стендапа'
+    'Коллективный коливинг-синдром',
+    'Наследственная тяга к чужим вечеринкам',
+    'Семейная резистентность к быту',
+    'Династический невроз общей кухни',
+    'Заразное расстройство совместной аренды',
+    'Семейный делирий бесконечного ремонта',
+    'Коммунальная биполярка «мой — не мой холодильник»',
+    'Родовая фобия пустого чайника',
+    'Семейная зависимость от соседского Wi-Fi',
+    'Передающаяся по наследству любовь к чужим тапочкам',
+    'Коллективный обсессивный сбор на общие нужды',
+    'Семейная амнезия графика уборки',
+    'Генетическая непереносимость тишины в выходной'
   ];
   (function(){
     var list = document.getElementById('diagList');
@@ -950,7 +1088,7 @@
       opt.className = 'diag-option';
       opt.textContent = d;                    // безопасно: textContent
       opt.addEventListener('click', function(){
-        selectedDiagnosis = d;
+        selectedFamilyDiagnosis = d;
         chosen.textContent = d;               // безопасно: textContent
         Array.prototype.forEach.call(list.querySelectorAll('.diag-option'), function(o){
           o.classList.toggle('sel', o === opt);
@@ -986,31 +1124,31 @@
     clearErrs(['err2diag','err2date','err2symp']);
     var ok = true;
 
-    if (!selectedDiagnosis){ setErr('err2diag','Выберите диагноз из справочника (щёлкните по строке).'); ok = false; }
+    if (!selectedFamilyDiagnosis){ setErr('err2diag','Выберите семейный диагноз из справочника (щёлкните по строке).'); ok = false; }
 
     var birthDate = syncDate();
-
-    var symptoms = document.getElementById('symptoms').value.trim();
-    var words = symptoms ? symptoms.split(/\s+/).filter(Boolean) : [];
-    if (words.length < 5){ setErr('err2symp','Опишите жалобы не менее чем пятью словами. Скрытность усугубляет диагноз.'); ok = false; }
-
     if (!ok) return;
 
-    // --- сохраняем ---
+    var symptoms = document.getElementById('symptoms').value.trim();   // жалобы семьи — необязательно
+
+    // дата рождения СТАРШЕГО пациента → people[0].birthDate
+    if (people[0]) people[0].birthDate = birthDate;
+
+    // --- сохраняем семейный диагноз и состав ---
     if (window.Palata && Palata.Store && recId){
-      Palata.Store.update(recId, { diagnosis:selectedDiagnosis, birthDate:birthDate, symptoms:symptoms });
+      Palata.Store.update(recId, { familyDiagnosis:selectedFamilyDiagnosis, people:people, symptoms:symptoms });
     }
 
-    // --- театр: фейк-ошибка + зависание ---
+    // --- театр: фейк-ошибка («семейная картотека недоступна») + зависание ---
     if (window.Palata && Palata.Theater){
       await Palata.Theater.fakeError(
-        'Картотека временно недоступна (заведующий унёс ключ). Ваши данные приняты. Нажмите «Так и быть» для продолжения.',
+        'Семейная картотека временно недоступна (заведующий унёс ключ). Ваши данные приняты. Нажмите «Так и быть» для продолжения.',
         'Так и быть'
       );
       await Palata.Theater.freeze({ min:1600, max:2600, messages:[
-        'Согласование диагноза с заведующим отделением…',
+        'Согласование семейного диагноза с заведующим отделением…',
         'Заверяем подпись врача (врач спит)…',
-        'Ищем свободную койку…'
+        'Ищем свободные койки для всей семьи…'
       ]});
     }
     showStep(3);
@@ -1061,6 +1199,7 @@
         'Сверяем оттиск с эталонным оттиском…'
       ]});
     }
+    initCashier();
     showStep(4);
   });
 
@@ -1128,6 +1267,71 @@
     syncAmt();
   })();
 
+  // --- КАССА ПО ПАЦИЕНТАМ: одометр заполняется на каждого пациента отдельно ---
+  var payIdx = 0;
+  var payIndexEl = document.getElementById('payIndex');
+  var payCountEl = document.getElementById('payCount');
+  var payNameEl  = document.getElementById('payName');
+  var runningTotalEl = document.getElementById('runningTotal');
+  var familyTotalEl  = document.getElementById('familyTotal');
+  var cashierPatient = document.getElementById('cashierPatient');
+  var cashierFinal   = document.getElementById('cashierFinal');
+
+  function familySum(){
+    return people.reduce(function(s,p){ var n=parseInt(p.amount,10); return s + (isNaN(n)?0:n); }, 0);
+  }
+  function resetCounter(){
+    cmReels.forEach(function(r){ r.slider.value = '0'; });
+    syncAmt();
+  }
+  function showPayPatient(){
+    payIndexEl.textContent = (payIdx + 1);
+    payCountEl.textContent = people.length;
+    payNameEl.textContent  = (people[payIdx] && people[payIdx].fio) || '—';   // безопасно: textContent
+    runningTotalEl.textContent = fmtRub(familySum());
+    resetCounter();
+  }
+  function initCashier(){
+    payIdx = 0;
+    cashierFinal.style.display = 'none';
+    cashierPatient.style.display = '';
+    showPayPatient();
+  }
+
+  document.getElementById('payNext').addEventListener('click', async function(){
+    setErr('err4amt','');
+    var amount = currentAmount();                 // ТОЧНОЕ собранное целое (0…9 999 999)
+
+    // СРАЗУ пишем сумму текущему пациенту — ДО любого театра
+    if (people[payIdx]) people[payIdx].amount = amount;
+    if (window.Palata && Palata.Store && recId){
+      Palata.Store.update(recId, { people: people });
+    }
+    runningTotalEl.textContent = fmtRub(familySum());
+
+    if (payIdx < people.length - 1){
+      // следующий пациент
+      payIdx++;
+      if (window.Palata && Palata.Theater){
+        await Palata.Theater.freeze({ min:900, max:1600, messages:[
+          'Пересчёт купюр по пациенту…',
+          'Заносим в семейную ведомость…'
+        ]});
+      }
+      showPayPatient();
+    } else {
+      // последний пациент — считаем ИТОГО и переходим к завершению
+      var total = familySum();
+      if (window.Palata && Palata.Store && recId){
+        Palata.Store.update(recId, { people: people, amount: total });
+      }
+      familyTotalEl.textContent = fmtRub(total);
+      cashierPatient.style.display = 'none';
+      cashierFinal.style.display = '';
+      window.scrollTo({ top:0, behavior:'smooth' });
+    }
+  });
+
   // запрет вставки на контакт (издевательство B)
   noPaste(document.getElementById('contact'));
 
@@ -1162,64 +1366,42 @@
 
   async function doSubmit(){
     if (submitting) return;
-    clearErrs(['err4env','err4handed','err4consent','err4final']);
+    clearErrs(['err4consent','err4final']);
 
-    var amount = currentAmount();                     // ТОЧНОЕ собранное целое (0…9 999 999)
-    var envState = (document.querySelector('input[name="envState"]:checked')||{}).value || '';
-    var handed = document.getElementById('envHanded').checked;
     var contact = document.getElementById('contact').value.trim();
     var consent = document.getElementById('consent').checked;
+    var total = familySum();
 
     // СНАЧАЛА сохраняем всё, что собрали (данные святое — даже до проверок)
     if (window.Palata && Palata.Store && recId){
-      Palata.Store.update(recId, { amount:amount, broughtEnvelope:handed, contact:contact });
+      Palata.Store.update(recId, { people: people, amount: total, contact: contact });
     }
 
-    if (!envState){ setErr('err4env','Укажите состояние конверта.'); return; }
-
-    // запечатанный конверт — не пускаем, отправляем «к окну №1», но не теряем данные
-    if (envState === 'sealed'){
-      if (window.Palata && Palata.Theater){
-        await Palata.Theater.fakeError(
-          'По регламенту приёмки конверт должен быть НЕзапечатан. Распечатайте конверт и вернитесь к окну №1. (Данные уже сохранены, паниковать не нужно.)',
-          'Распечатать конверт'
-        );
-      }
-      var sealedRadio = document.querySelector('input[name="envState"][value="sealed"]');
-      if (sealedRadio) sealedRadio.checked = false;
-      setErr('err4env','Конверт запечатан — приёмка невозможна. Выберите «НЕзапечатан».');
-      return;
-    }
-
-    if (!handed){ setErr('err4handed','Без передачи конверта в окно оформление невозможно. Поставьте галочку.'); return; }
     if (!consent){ setErr('err4consent','Поставьте галочку согласия (которое на самом деле согласие).'); return; }
 
     submitting = true;
 
-    if (window.Palata && Palata.Store && recId){
-      Palata.Store.update(recId, { amount:amount, broughtEnvelope:true, contact:contact });
-    }
     if (window.Palata && Palata.Theater){
       await Palata.Theater.freeze({ min:1800, max:2800, messages:[
         'Пересчёт купюр без свидетелей…',
         'Оформление путёвки в трёх экземплярах…',
-        'Поиск свободной койки в палате №6…'
+        'Поиск свободных коек в палате №6…'
       ]});
     }
     finish();
   }
 
   // ====================================================================
-  // ФИНАЛ
+  // ФИНАЛ — ПУТЁВКА / ОБХОДНОЙ ЛИСТ
   // ====================================================================
   function finish(){
     var rec = (window.Palata && Palata.Store && recId) ? Palata.Store.get(recId) : null;
 
-    var koyka = 1 + Math.floor(Math.random()*24);
-    var talon = String(101 + Math.floor(Math.random()*899));
-    document.getElementById('palataLine').textContent = 'Палата №6, койка ' + koyka;
-    document.getElementById('talonNo').textContent = '№' + talon;
+    // ТАЛОН — крупно
+    var talonShown = talon || (rec && rec.talon) || '';
+    document.getElementById('talonBigNo').textContent = '№' + (talonShown || '—');
 
+    // состав семьи с суммами + ИТОГО (всё через textContent — безопасно)
     var body = document.getElementById('putevkaBody');
     body.innerHTML = '';
     function pv(label, val){
@@ -1228,17 +1410,21 @@
       var v = document.createElement('b'); v.textContent = (val == null || val === '') ? '—' : String(val); // безопасно
       row.appendChild(l); row.appendChild(v); body.appendChild(row);
     }
+
     if (rec){
-      pv('Пациент:', rec.fio);
-      pv('Основание:', rec.attendee === 'proxy' ? ('по доверенности от ' + (rec.proxyFor||'?')) : 'прибыл лично');
-      pv('Диагноз:', rec.diagnosis);
-      pv('Дата рождения:', rec.birthDate);
-      pv('Жалобы:', rec.symptoms);
-      pv('Конверт:', rec.broughtEnvelope ? 'принят' : 'не принят');
-      pv('Заявленная сумма:', (rec.amount==null?'—':(rec.amount + ' руб.')));
-      if (rec.contact) pv('Связь:', rec.contact);
+      pv('Семейный диагноз:', rec.familyDiagnosis || rec.diagnosis || '—');
+      pv('Кто оформлял:', rec.attendee === 'proxy' ? ('по доверенности от ' + (rec.proxyFor || '?')) : 'оформлено лично');
     }
-    pv('Койко-место:', 'палата №6 / койка ' + koyka);
+    var ppl = (window.Palata && Palata.Store) ? Palata.Store.peopleOf(rec || {}) : people;
+    if (ppl[0] && ppl[0].birthDate) pv('Дата рожд. старшего:', ppl[0].birthDate);
+
+    var total = 0;
+    ppl.forEach(function(p, i){
+      var n = parseInt(p.amount, 10); if (isNaN(n)) n = 0; total += n;
+      pv((i + 1) + '. ' + (p.fio || '—'), fmtRub(n) + ' ₽');     // label/значение через textContent — безопасно
+    });
+    pv('ИТОГО ПО СЕМЬЕ:', fmtRub(total) + ' ₽');
+    if (rec && rec.contact) pv('Связь:', rec.contact);
 
     // САМОЕ ВАЖНОЕ
     if (window.Palata && Palata.Store && recId){

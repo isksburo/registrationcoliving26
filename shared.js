@@ -46,6 +46,8 @@
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
+  function pad3(n) { n = String(n); while (n.length < 3) n = '0' + n; return n; }
+
   function formatTs(ts) {
     var d = new Date(ts);
     if (isNaN(d.getTime())) return '';
@@ -100,6 +102,9 @@
         birthDate: '',
         symptoms: '',
         contact: '',
+        talon: '',           // номер талона (сквозной, для бумажной книги регистратуры)
+        people: [],          // состав семьи: [{ fio, birthDate, amount }]
+        familyDiagnosis: '', // коллективный «семейный диагноз»
         skin: '',
         done: false          // дошёл ли до конца формы
       }, initial || {});
@@ -134,6 +139,16 @@
 
     count: function () { return readRaw().length; },
 
+    // Следующий номер талона — сквозная нумерация для бумажной книги регистратуры.
+    nextTalon: function () {
+      var max = 0;
+      readRaw().forEach(function (r) {
+        var n = parseInt(String(r.talon || '').replace(/\D/g, ''), 10);
+        if (!isNaN(n) && n > max) max = n;
+      });
+      return pad3(max + 1);
+    },
+
     remove: function (id) {
       var all = readRaw().filter(function (r) { return r.id !== id; });
       writeRaw(all);
@@ -141,33 +156,50 @@
 
     clear: function () { writeRaw([]); },
 
+    // Состав семьи записи; для старых одиночных записей синтезируем одного человека.
+    peopleOf: function (r) {
+      if (Array.isArray(r.people) && r.people.length) return r.people;
+      return [{ fio: r.fio || '', birthDate: r.birthDate || '', amount: r.amount }];
+    },
+
+    // Итоговая сумма по семье (если amount не задан — суммируем по людям).
+    totalOf: function (r) {
+      var t = parseFloat(r.amount);
+      if (!isNaN(t)) return t;
+      return Store.peopleOf(r).reduce(function (s, p) {
+        var n = parseFloat(p.amount); return s + (isNaN(n) ? 0 : n);
+      }, 0);
+    },
+
     toCSV: function () {
-      var cols = [
-        ['ts', 'Время'],
-        ['fio', 'ФИО'],
-        ['attendee', 'Кто пришёл'],
-        ['proxyFor', 'Доверенность от'],
-        ['broughtEnvelope', 'Конверт принёс'],
-        ['amount', 'Сумма (заявл.)'],
-        ['paid', 'Оплачено (подтв.)'],
-        ['diagnosis', 'Диагноз'],
-        ['birthDate', 'Дата рождения'],
-        ['symptoms', 'Симптомы'],
-        ['contact', 'Контакт'],
-        ['skin', 'Скин'],
-        ['done', 'Дошёл до конца'],
-        ['id', 'ID']
-      ];
       var rows = readRaw().slice().sort(function (a, b) { return a.ts - b.ts; });
-      var out = [cols.map(function (c) { return csvCell(c[1]); }).join(',')];
+      var header = ['Талон', 'Время', 'Кол-во', 'Состав (ФИО)', 'Суммы по людям',
+        'ИТОГО ₽', 'Семейный диагноз', 'Кто пришёл', 'Доверенность от',
+        'Контакт', 'Оплачено', 'Дошёл до конца', 'ID'];
+      var out = [header.map(csvCell).join(',')];
       rows.forEach(function (r) {
-        out.push(cols.map(function (c) {
-          var k = c[0], v = r[k];
-          if (k === 'ts') v = formatTs(r.ts);
-          else if (k === 'attendee') v = r.attendee === 'proxy' ? 'Доверенное лицо' : (r.attendee === 'self' ? 'Лично' : '');
-          else if (k === 'broughtEnvelope' || k === 'paid' || k === 'done') v = v ? 'Да' : 'Нет';
-          return csvCell(v);
-        }).join(','));
+        var ppl = Store.peopleOf(r);
+        var names = ppl.map(function (p) { return p.fio || '—'; }).join('; ');
+        var sums = ppl.map(function (p) {
+          var n = parseFloat(p.amount);
+          return (p.fio || '—') + '=' + (isNaN(n) ? '' : n);
+        }).join('; ');
+        var line = [
+          r.talon || '',
+          formatTs(r.ts),
+          ppl.length,
+          names,
+          sums,
+          Store.totalOf(r),
+          r.familyDiagnosis || r.diagnosis || '',
+          r.attendee === 'proxy' ? 'Доверенное лицо' : (r.attendee === 'self' ? 'Лично' : ''),
+          r.proxyFor || '',
+          r.contact || '',
+          r.paid ? 'Да' : 'Нет',
+          r.done ? 'Да' : 'Нет',
+          r.id
+        ];
+        out.push(line.map(csvCell).join(','));
       });
       return '﻿' + out.join('\r\n'); // BOM, чтобы Excel не калечил кириллицу
     },

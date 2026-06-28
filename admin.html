@@ -41,7 +41,7 @@
   <h1>🏥 ПАЛАТА №6 · ОРДИНАТОРСКАЯ</h1>
   <div class="stats" id="stats"></div>
   <div class="spacer"></div>
-  <input class="search" id="search" placeholder="поиск по ФИО / контакту…" autocomplete="off">
+  <input class="search" id="search" placeholder="поиск по талону / ФИО / контакту…" autocomplete="off">
   <button class="primary" id="export">⬇ CSV</button>
   <button id="refresh">↻ обновить</button>
   <button class="danger" id="clear">очистить всё</button>
@@ -50,8 +50,8 @@
   <table>
     <thead>
       <tr>
-        <th>#</th><th>Время</th><th>ФИО</th><th>Кто</th><th>Конверт</th>
-        <th>Сумма</th><th>Оплачено</th><th>Диагноз</th><th>Контакт</th><th>Скин</th><th></th>
+        <th>#</th><th>Время</th><th>Талон</th><th>Состав семьи · суммы</th><th>Чел.</th>
+        <th>Кто</th><th>ИТОГО</th><th>Оплачено</th><th>Сем. диагноз</th><th>Контакт</th><th></th>
       </tr>
     </thead>
     <tbody id="rows"></tbody>
@@ -71,48 +71,60 @@
   var statsEl = document.getElementById('stats');
   var searchEl = document.getElementById('search');
 
-  function money(v) { return (v === null || v === undefined || v === '') ? '<span class="muted">—</span>' : esc(v) + ' ₽'; }
+  function fmtMoney(n) {
+    n = parseFloat(n);
+    return isNaN(n) ? '<span class="muted">—</span>' : '<b>' + n.toLocaleString('ru-RU') + ' ₽</b>';
+  }
 
   function render() {
     var q = searchEl.value.trim().toLowerCase();
     var all = Palata.Store.all();
-    var list = !q ? all : all.filter(function (r) {
-      return (r.fio + ' ' + r.contact + ' ' + r.proxyFor).toLowerCase().indexOf(q) >= 0;
-    });
+
+    function hay(r) {
+      var names = Palata.Store.peopleOf(r).map(function (p) { return p.fio || ''; }).join(' ');
+      return ((r.talon || '') + ' ' + names + ' ' + (r.fio || '') + ' ' + (r.contact || '') + ' ' + (r.proxyFor || '')).toLowerCase();
+    }
+    var list = !q ? all : all.filter(function (r) { return hay(r).indexOf(q) >= 0; });
 
     // Статистика — по всем, не по отфильтрованным.
-    var paidCount = 0, sum = 0, doneCount = 0;
+    var paidCount = 0, kassa = 0, doneCount = 0, peopleTotal = 0;
     all.forEach(function (r) {
-      if (r.paid) paidCount++;
+      peopleTotal += Palata.Store.peopleOf(r).length;
+      if (r.paid) { paidCount++; kassa += Palata.Store.totalOf(r); }
       if (r.done) doneCount++;
-      var n = parseFloat(r.amount);
-      if (r.paid && !isNaN(n)) sum += n;
     });
     statsEl.innerHTML =
-      '<span>записей <b>' + all.length + '</b></span>' +
-      '<span>дошли до конца <b>' + doneCount + '</b></span>' +
+      '<span>семей <b>' + all.length + '</b></span>' +
+      '<span>человек <b>' + peopleTotal + '</b></span>' +
+      '<span>дошли <b>' + doneCount + '</b></span>' +
       '<span>оплатили <b>' + paidCount + '</b></span>' +
-      '<span>касса <b>' + sum.toLocaleString('ru-RU') + ' ₽</b></span>';
+      '<span>касса (оплач.) <b>' + kassa.toLocaleString('ru-RU') + ' ₽</b></span>';
 
     emptyEl.hidden = list.length > 0;
     rowsEl.innerHTML = list.map(function (r, i) {
+      var ppl = Palata.Store.peopleOf(r);
       var who = r.attendee === 'proxy'
         ? '<span class="pill proxy" title="' + esc(r.proxyFor) + '">доверенное</span>'
         : (r.attendee === 'self' ? '<span class="pill self">лично</span>' : '<span class="muted">—</span>');
+      var roster = ppl.map(function (p) {
+        var n = parseFloat(p.amount);
+        var sum = isNaN(n) ? '<span class="muted">— ₽</span>' : n.toLocaleString('ru-RU') + ' ₽';
+        return '<div>' + (esc(p.fio) || '<span class="muted">без имени</span>') + ' — ' + sum + '</div>';
+      }).join('');
       return '<tr class="' + (r.done ? '' : 'draft') + '" data-id="' + esc(r.id) + '">' +
         '<td class="muted">' + (i + 1) + '</td>' +
         '<td class="muted">' + esc(fmt(r.ts)) + '</td>' +
-        '<td><b>' + (esc(r.fio) || '<span class="muted">без имени</span>') + '</b>' +
-          (r.attendee === 'proxy' && r.proxyFor ? '<br><span class="muted">от: ' + esc(r.proxyFor) + '</span>' : '') +
+        '<td><b>' + (esc(r.talon) || '<span class="muted">—</span>') + '</b></td>' +
+        '<td>' + roster +
+          (r.attendee === 'proxy' && r.proxyFor ? '<span class="muted">доверенность от: ' + esc(r.proxyFor) + '</span>' : '') +
           (r.done ? '' : '<br><span class="muted">⚠ не дошёл до конца</span>') + '</td>' +
+        '<td class="muted">' + ppl.length + '</td>' +
         '<td>' + who + '</td>' +
-        '<td>' + (r.broughtEnvelope ? '✅' : '<span class="muted">—</span>') + '</td>' +
-        '<td>' + money(r.amount) + '</td>' +
+        '<td>' + fmtMoney(Palata.Store.totalOf(r)) + '</td>' +
         '<td class="toggle ' + (r.paid ? 'paid-yes' : 'paid-no') + '" data-act="paid" data-id="' + esc(r.id) + '">' +
           (r.paid ? '✔ да' : '✘ нет') + '</td>' +
-        '<td class="muted">' + (esc(r.diagnosis) || '—') + '</td>' +
+        '<td class="muted">' + (esc(r.familyDiagnosis || r.diagnosis) || '—') + '</td>' +
         '<td class="muted">' + (esc(r.contact) || '—') + '</td>' +
-        '<td class="muted">' + esc(r.skin) + '</td>' +
         '<td class="row-actions"><button data-act="del" data-id="' + esc(r.id) + '">🗑</button></td>' +
         '</tr>';
     }).join('');
