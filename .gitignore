@@ -4,3 +4,6 @@ node_modules/
 exports/
 *.csv
 .claude/CLAUDE.local.md
+
+# локальный передеплой на Mac Mini (инфра, не в публичный репо)
+deploy-mini.sh
