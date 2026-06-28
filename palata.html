@@ -370,6 +370,18 @@
   .person-del:active{ transform:translate(2px,2px); box-shadow:none; }
   .person-del[disabled]{ opacity:.32; cursor:not-allowed; box-shadow:none; }
   #addPerson[disabled]{ opacity:.4; cursor:not-allowed; }
+  /* solo-режим: одно поле ФИО без номера/удаления/списка */
+  .people-list.solo .person-no,
+  .people-list.solo .person-del{ display:none; }
+  .people-list.solo .person-row{ border-bottom:none; padding-bottom:0; margin-bottom:4px; }
+
+  /* ===================== РАЗВИЛКА SOLO/FAMILY (ОКНО №0½) ===================== */
+  .mode-choice{ display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; }
+  .mode-choice .btn{ flex:1 1 220px; min-width:200px; padding:18px 16px; line-height:1.35; }
+  .mode-choice .btn small{
+    display:block; font-size:11px; font-weight:normal; letter-spacing:.5px;
+    opacity:.85; margin-top:5px; text-transform:none;
+  }
 
   /* ===================== КАССА ПО ПАЦИЕНТАМ (окно №4) ===================== */
   .cashier-head{
@@ -534,19 +546,36 @@
 
       <div style="margin-top:10px;">
         <button type="button" class="btn big primary" id="takeTalon">Возьмите талон</button>
-        <button type="button" class="btn big primary" id="goWindow1" style="display:none;">Пройти к окну №1 ▸</button>
+        <button type="button" class="btn big primary" id="goWindow1" style="display:none;">Пройти к сортировке ▸</button>
       </div>
     </div>
   </section>
 
-  <!-- ================= ОКНО №1 — РЕГИСТРАТУРА (СОСТАВ СЕМЬИ) ================= -->
-  <section class="step" id="step1">
-    <h2 class="window-title">Окно №1 · Регистратура</h2>
-    <p class="window-sub">Оформляется вся семья по одному талону. Заполняется разборчивым почерком. Исправления не допускаются.</p>
+  <!-- ================= ОКНО №0½ — СОРТИРОВОЧНАЯ (РАЗВИЛКА SOLO/FAMILY) ================= -->
+  <section class="step" id="stepMode">
+    <h2 class="window-title">Окно №0½ · Сортировочная</h2>
+    <p class="window-sub">Перед регистратурой определите форму госпитализации. Выбор окончательный и обжалованию не подлежит (передумать можно, вернувшись за новым талоном).</p>
 
     <fieldset>
-      <legend>Состав семьи (пациенты)</legend>
-      <p class="hint" style="margin-top:0;">Внесите каждого пациента отдельной строкой. До шести человек на один талон. Первым указывается старший пациент.</p>
+      <legend>Форма госпитализации</legend>
+      <p class="hint" style="margin-top:0;">Выберите ровно ОДИН вариант. Оба ведут в палату №6 — разница только в количестве тапочек.</p>
+      <div class="mode-choice">
+        <button type="button" class="btn big primary" id="modeSolo">Я ОДИН<small>индивидуальная госпитализация · один пациент, один диагноз, одна сумма</small></button>
+        <button type="button" class="btn big primary" id="modeFamily">Мы СЕМЬЁЙ<small>семейная госпитализация · до 6 человек, общий диагноз, сумма по каждому</small></button>
+      </div>
+      <div class="hint">Одиночество не лечится скидкой. Семейный подряд оплачивается поголовно.</div>
+      <div class="field-err" id="errMode"></div>
+    </fieldset>
+  </section>
+
+  <!-- ================= ОКНО №1 — РЕГИСТРАТУРА (СОСТАВ СЕМЬИ / ПАЦИЕНТ) ================= -->
+  <section class="step" id="step1">
+    <h2 class="window-title">Окно №1 · Регистратура</h2>
+    <p class="window-sub" id="w1sub">Оформляется вся семья по одному талону. Заполняется разборчивым почерком. Исправления не допускаются.</p>
+
+    <fieldset>
+      <legend id="w1legend">Состав семьи (пациенты)</legend>
+      <p class="hint" id="w1hint" style="margin-top:0;">Внесите каждого пациента отдельной строкой. До шести человек на один талон. Первым указывается старший пациент.</p>
       <div class="people-list" id="peopleList"></div>
       <button type="button" class="btn next" id="addPerson">➕ Внести ещё пациента</button>
       <div class="hint">Поле ФИО: регистр букв выставляется автоматически по ГОСТ-6 (не спорьте с аппаратом). Внесение данных копированием недопустимо (приказ №6) — вставка, перетаскивание и контекстное меню заблокированы.</div>
@@ -557,7 +586,7 @@
       <legend>Кто оформляет</legend>
       <div class="radios runaway" id="attendeeRadios">
         <label><input type="radio" name="attendee" value="self"> Оформляю ЛИЧНО, по собственному недомыслию</label>
-        <label><input type="radio" name="attendee" value="proxy"> Оформляю ПО ДОВЕРЕННОСТИ за семью</label>
+        <label><input type="radio" name="attendee" value="proxy"> <span id="proxyLabelTxt">Оформляю ПО ДОВЕРЕННОСТИ за семью</span></label>
       </div>
       <label class="row" id="proxyWrap" style="display:none; margin-top:12px;">
         <span class="lbl">От кого доверенность (ФИО доверителя) <span class="req">*</span></span>
@@ -576,15 +605,15 @@
 
   <!-- ================= ОКНО №2 — ВРАЧ ================= -->
   <section class="step" id="step2">
-    <h2 class="window-title">Окно №2 · Дежурный врач</h2>
-    <p class="window-sub">Осмотр производится заочно, на всю семью сразу. Симптомы записываются со слов санитара.</p>
+    <h2 class="window-title" id="w2title">Окно №2 · Дежурный врач</h2>
+    <p class="window-sub" id="w2sub">Осмотр производится заочно, на всю семью сразу. Симптомы записываются со слов санитара.</p>
 
     <fieldset>
-      <legend>Семейный диагноз (один на всю семью)</legend>
+      <legend id="w2legend">Семейный диагноз (один на всю семью)</legend>
       <label class="row" style="margin-bottom:6px;">
-        <span class="lbl">Поиск по справочнику семейных диагнозов <span class="req">*</span></span>
+        <span class="lbl" id="w2searchlbl">Поиск по справочнику семейных диагнозов <span class="req">*</span></span>
         <input type="text" id="diagSearch" autocomplete="off" placeholder="печатайте — и нужное спрячется…">
-        <span class="hint">Справочник работает по реверс-протоколу: при наборе СОВПАДЕНИЯ скрываются. Чтобы выбрать — найдите глазами и щёлкните. Диагноз ставится коллективно, на всю семью.</span>
+        <span class="hint" id="w2hint">Справочник работает по реверс-протоколу: при наборе СОВПАДЕНИЯ скрываются. Чтобы выбрать — найдите глазами и щёлкните. Диагноз ставится коллективно, на всю семью.</span>
       </label>
       <div class="diag-list" id="diagList"></div>
       <div class="diag-chosen">Выбрано: <b id="diagChosen">— ничего —</b></div>
@@ -592,7 +621,7 @@
     </fieldset>
 
     <fieldset>
-      <legend>Дата рождения СТАРШЕГО пациента (высокоточными регуляторами)</legend>
+      <legend id="w2datelegend">Дата рождения СТАРШЕГО пациента (высокоточными регуляторами)</legend>
       <div class="sl-row"><span class="sl-tag">Число</span><input type="range" id="sd" min="1" max="31" value="15"><span class="sl-val" id="sdv">15</span></div>
       <div class="sl-row"><span class="sl-tag">Месяц</span><input type="range" id="sm" min="1" max="12" value="6"><span class="sl-val" id="smv">6</span></div>
       <div class="sl-row"><span class="sl-tag">Год</span><input type="range" id="sy" min="1920" max="2010" value="1965"><span class="sl-val" id="syv">1965</span></div>
@@ -602,9 +631,9 @@
     </fieldset>
 
     <fieldset>
-      <legend>Жалобы семьи (необязательно)</legend>
+      <legend id="w2symplegend">Жалобы семьи (необязательно)</legend>
       <label class="row">
-        <span class="lbl">Опишите жалобы семьи (со слов)</span>
+        <span class="lbl" id="w2symplbl">Опишите жалобы семьи (со слов)</span>
         <textarea id="symptoms" placeholder="Например: всей семьёй слышат голоса заведующего; коллективно считают себя коливерами; пишут код по ночам…"></textarea>
         <span class="hint">Поле необязательное. Можно оставить пустым — санитар допишет сам.</span>
       </label>
@@ -639,7 +668,7 @@
   <!-- ================= ОКНО №4 — ГЛАВБУХ (СУММА ПО КАЖДОМУ) ================= -->
   <section class="step" id="step4">
     <h2 class="window-title">Окно №4 · Главный бухгалтер</h2>
-    <p class="window-sub">Касса работает по настроению. Сдачи нет. Чек не предусмотрен формой. Взнос назначается по каждому пациенту отдельно.</p>
+    <p class="window-sub" id="w4sub">Касса работает по настроению. Сдачи нет. Чек не предусмотрен формой. Взнос назначается по каждому пациенту отдельно.</p>
 
     <!-- 4А — взнос по текущему пациенту -->
     <fieldset id="cashierPatient">
@@ -654,7 +683,7 @@
         </div>
         <input type="hidden" id="amt" value="0">
       </div>
-      <div class="running-total">Внесено по семье: <b id="runningTotal">0</b> ₽</div>
+      <div class="running-total"><span id="runningLabel">Внесено по семье:</span> <b id="runningTotal">0</b> ₽</div>
       <div class="field-err" id="err4amt"></div>
       <div class="nav">
         <span></span>
@@ -664,8 +693,8 @@
 
     <!-- 4Б — контакт, согласие, оформление семьи -->
     <fieldset id="cashierFinal" style="display:none;">
-      <legend>Завершение оформления семьи</legend>
-      <div class="cm-total" style="margin-top:0;">ИТОГО ПО СЕМЬЕ: <span id="familyTotal">0</span> ₽</div>
+      <legend id="w4finallegend">Завершение оформления семьи</legend>
+      <div class="cm-total" style="margin-top:0;"><span id="familyTotalLabel">ИТОГО ПО СЕМЬЕ:</span> <span id="familyTotal">0</span> ₽</div>
 
       <label class="row" style="margin-top:14px;">
         <span class="lbl">Контакт для уведомления о выписке (телеграм)</span>
@@ -676,12 +705,12 @@
       <div class="consent-box">
         <label>
           <input type="checkbox" id="consent">
-          <span>Я <b>НЕ</b> против того, чтобы <b>не</b> отказываться от госпитализации семьи, и <b>не</b> подтверждаю, что я <b>не</b> согласен(на). Поставьте галочку, если всё ясно.</span>
+          <span id="consentText">Я <b>НЕ</b> против того, чтобы <b>не</b> отказываться от госпитализации семьи, и <b>не</b> подтверждаю, что я <b>не</b> согласен(на). Поставьте галочку, если всё ясно.</span>
         </label>
       </div>
       <div class="field-err" id="err4consent"></div>
 
-      <p class="hint">Нажмите кнопку «ОФОРМИТЬ СЕМЬЮ». Она немного нервная — убегает от курсора, но после нескольких попыток замирает.</p>
+      <p class="hint" id="w4btnhint">Нажмите кнопку «ОФОРМИТЬ СЕМЬЮ». Она немного нервная — убегает от курсора, но после нескольких попыток замирает.</p>
       <div class="final-zone" id="finalZone">
         <button type="button" class="btn-hospital" id="btnHospital">ОФОРМИТЬ СЕМЬЮ</button>
       </div>
@@ -730,7 +759,7 @@
         <div class="bh-foot">Точное время уточняйте у бухгалтера в момент, когда он отойдёт.</div>
       </div>
 
-      <div class="final-text">
+      <div class="final-text" id="finalText">
         Поздравляем! Семья официально оформлена приёмным отделением. Сопротивление бесполезно
         и зафиксировано в карте. Тапочки выдаются на втором этаже под роспись.
         Передачи принимаются по чётным. Голоса — по нечётным. Добро пожаловать в коллектив.
@@ -770,8 +799,9 @@
   // ---------- состояние ----------
   var recId = null;
   var talon = '';                       // реальный сквозной номер талона (присвоен на окне №0)
+  var mode = null;                      // 'solo' | 'family' — выбирается на развилке (окно №0½)
   var people = [];                      // состав семьи [{ fio, birthDate, amount }] — источник правды
-  var selectedFamilyDiagnosis = '';     // один диагноз на всю семью
+  var selectedDiag = '';                // выбранный диагноз (solo → record.diagnosis, family → familyDiagnosis)
   var submitting = false;
   var MAX_PEOPLE = 6;
 
@@ -834,10 +864,10 @@
   // ====================================================================
   // НАВИГАЦИЯ
   // ====================================================================
-  var STEPS = { 0:'step0', 1:'step1', 2:'step2', 3:'step3', 4:'step4', final:'stepFinal' };
-  // realStep для прогресс-обманки: талон=1, окно1=2 ... выдача=6
-  var REAL = { 0:1, 1:2, 2:3, 3:4, 4:5, final:6 };
-  var BAR  = { 0:0, 1:1, 2:2, 3:3, 4:4, final:5 };
+  var STEPS = { 0:'step0', mode:'stepMode', 1:'step1', 2:'step2', 3:'step3', 4:'step4', final:'stepFinal' };
+  // realStep для прогресс-обманки: талон=1, развилка тоже у талона, окно1=2 ... выдача=6
+  var REAL = { 0:1, mode:1, 1:2, 2:3, 3:4, 4:5, final:6 };
+  var BAR  = { 0:0, mode:0, 1:1, 2:2, 3:3, 4:4, final:5 };
 
   function showStep(key){
     Object.keys(STEPS).forEach(function(k){
@@ -899,8 +929,95 @@
       }
     }
 
-    goBtn.addEventListener('click', function(){ showStep(1); });
+    goBtn.addEventListener('click', function(){ showStep('mode'); });
   })();
+
+  // ====================================================================
+  // ОКНО №0½ — РАЗВИЛКА: ОДИН / СЕМЬЁЙ
+  // ====================================================================
+  function chooseMode(m){
+    mode = (m === 'solo') ? 'solo' : 'family';
+    // запись создаём СРАЗУ при выборе развилки (mode пишем немедленно)
+    ensureRecord();
+    if (window.Palata && Palata.Store && recId){
+      Palata.Store.update(recId, { mode: mode });
+    }
+    applyMode();
+    showStep(1);
+  }
+  document.getElementById('modeSolo').addEventListener('click', function(){ chooseMode('solo'); });
+  document.getElementById('modeFamily').addEventListener('click', function(){ chooseMode('family'); });
+
+  // Подгонка интерфейса под выбранный режим (solo/family). Только тексты/видимость —
+  // реальные данные пишутся в Store отдельно. Статичные строки, без пользовательских данных.
+  function applyMode(){
+    var solo = (mode === 'solo');
+    function $(id){ return document.getElementById(id); }
+    function setTxt(id, txt){ var el = $(id); if (el) el.textContent = txt; }
+    function setLabelReq(id, txt){
+      var el = $(id); if (!el) return;
+      el.textContent = txt + ' ';
+      var req = document.createElement('span'); req.className = 'req'; req.textContent = '*';
+      el.appendChild(req);
+    }
+
+    // --- ОКНО №1: регистратура ---
+    var pl = $('peopleList'); if (pl) pl.classList.toggle('solo', solo);
+    var addBtn = $('addPerson'); if (addBtn) addBtn.style.display = solo ? 'none' : '';
+    if (solo){
+      setTxt('w1sub', 'Оформляется ОДИН пациент по одному талону. Заполняется разборчивым почерком. Исправления не допускаются.');
+      setTxt('w1legend', 'Пациент');
+      setTxt('w1hint', 'Внесите ваше ФИО. Один талон — один пациент. Первым (и единственным) указывается тот, кто это читает.');
+      setTxt('proxyLabelTxt', 'Оформляю ПО ДОВЕРЕННОСТИ за одного человека');
+    } else {
+      setTxt('w1sub', 'Оформляется вся семья по одному талону. Заполняется разборчивым почерком. Исправления не допускаются.');
+      setTxt('w1legend', 'Состав семьи (пациенты)');
+      setTxt('w1hint', 'Внесите каждого пациента отдельной строкой. До шести человек на один талон. Первым указывается старший пациент.');
+      setTxt('proxyLabelTxt', 'Оформляю ПО ДОВЕРЕННОСТИ за семью');
+    }
+
+    // --- ОКНО №2: диагноз ---
+    buildDiagList(solo ? SOLO_DIAGNOSES : DIAGNOSES);
+    if (solo){
+      setTxt('w2sub', 'Осмотр производится заочно. Симптомы записываются со слов санитара.');
+      setTxt('w2legend', 'ВАШ ДИАГНОЗ (индивидуальный)');
+      setLabelReq('w2searchlbl', 'Поиск по справочнику индивидуальных диагнозов');
+      setTxt('w2hint', 'Справочник работает по реверс-протоколу: при наборе СОВПАДЕНИЯ скрываются. Чтобы выбрать — найдите глазами и щёлкните. Диагноз ставится лично вам.');
+      setTxt('w2datelegend', 'Дата рождения пациента (высокоточными регуляторами)');
+      setTxt('w2symplegend', 'Ваши жалобы (необязательно)');
+      setTxt('w2symplbl', 'Опишите свои жалобы (со слов)');
+    } else {
+      setTxt('w2sub', 'Осмотр производится заочно, на всю семью сразу. Симптомы записываются со слов санитара.');
+      setTxt('w2legend', 'Семейный диагноз (один на всю семью)');
+      setLabelReq('w2searchlbl', 'Поиск по справочнику семейных диагнозов');
+      setTxt('w2hint', 'Справочник работает по реверс-протоколу: при наборе СОВПАДЕНИЯ скрываются. Чтобы выбрать — найдите глазами и щёлкните. Диагноз ставится коллективно, на всю семью.');
+      setTxt('w2datelegend', 'Дата рождения СТАРШЕГО пациента (высокоточными регуляторами)');
+      setTxt('w2symplegend', 'Жалобы семьи (необязательно)');
+      setTxt('w2symplbl', 'Опишите жалобы семьи (со слов)');
+    }
+
+    // --- ОКНО №4: касса ---
+    var bh = $('btnHospital');
+    if (solo){
+      setTxt('w4sub', 'Касса работает по настроению. Сдачи нет. Чек не предусмотрен формой. Взнос назначается лично вам.');
+      setTxt('runningLabel', 'Внесено:');
+      setTxt('familyTotalLabel', 'ИТОГО К ОПЛАТЕ:');
+      setTxt('w4finallegend', 'Завершение оформления');
+      setTxt('w4btnhint', 'Нажмите кнопку «ГОСПИТАЛИЗИРОВАТЬ». Она немного нервная — убегает от курсора, но после нескольких попыток замирает.');
+      if (bh && !bh.classList.contains('calm')) bh.textContent = 'ГОСПИТАЛИЗИРОВАТЬ';
+      var ct = $('consentText');
+      if (ct) ct.innerHTML = 'Я <b>НЕ</b> против того, чтобы <b>не</b> отказываться от собственной госпитализации, и <b>не</b> подтверждаю, что я <b>не</b> согласен(на). Поставьте галочку, если всё ясно.';
+    } else {
+      setTxt('w4sub', 'Касса работает по настроению. Сдачи нет. Чек не предусмотрен формой. Взнос назначается по каждому пациенту отдельно.');
+      setTxt('runningLabel', 'Внесено по семье:');
+      setTxt('familyTotalLabel', 'ИТОГО ПО СЕМЬЕ:');
+      setTxt('w4finallegend', 'Завершение оформления семьи');
+      setTxt('w4btnhint', 'Нажмите кнопку «ОФОРМИТЬ СЕМЬЮ». Она немного нервная — убегает от курсора, но после нескольких попыток замирает.');
+      if (bh && !bh.classList.contains('calm')) bh.textContent = 'ОФОРМИТЬ СЕМЬЮ';
+      var ct2 = $('consentText');
+      if (ct2) ct2.innerHTML = 'Я <b>НЕ</b> против того, чтобы <b>не</b> отказываться от госпитализации семьи, и <b>не</b> подтверждаю, что я <b>не</b> согласен(на). Поставьте галочку, если всё ясно.';
+    }
+  }
 
   // ====================================================================
   // ОКНО №1 — РЕГИСТРАТУРА (СОСТАВ СЕМЬИ)
@@ -912,7 +1029,7 @@
   function ensureRecord(){
     if (recId) return;
     if (window.Palata && Palata.Store){
-      recId = Palata.Store.create({ skin:'palata', talon: talon });
+      recId = Palata.Store.create({ skin:'palata', talon: talon, mode: mode || '' });
     }
   }
 
@@ -1051,11 +1168,11 @@
 
     // --- ПОТОМ театр ---
     if (window.Palata && Palata.Theater){
-      await Palata.Theater.freeze({ min:1600, max:2600, messages:[
-        'Запрос отправлен в архив, ожидайте…',
-        'Сверяем состав семьи с домовой книгой…',
-        'Поиск семейной карты по картотеке…'
-      ]});
+      await Palata.Theater.freeze({ min:1600, max:2600, messages:
+        (mode === 'solo')
+          ? ['Запрос отправлен в архив, ожидайте…', 'Сверяем личность с домовой книгой…', 'Поиск личной карты по картотеке…']
+          : ['Запрос отправлен в архив, ожидайте…', 'Сверяем состав семьи с домовой книгой…', 'Поиск семейной карты по картотеке…']
+      });
     }
     showStep(2);
   });
@@ -1079,16 +1196,37 @@
     'Семейная амнезия графика уборки',
     'Генетическая непереносимость тишины в выходной'
   ];
-  (function(){
+  // --- ИНДИВИДУАЛЬНЫЕ (solo) диагнозы — личный абсурд, ~12 шт ---
+  var SOLO_DIAGNOSES = [
+    'Острый коливинг-синдром одиночки',
+    'Хроническая тяга к чужим вечеринкам',
+    'Резистентность к собственному быту',
+    'Невроз вечно пустого холодильника',
+    'Делирий бесконечного личного ремонта',
+    'Биполярка «мой — не мой стул»',
+    'Обсессивная фобия пустого чайника',
+    'Зависимость от соседского Wi-Fi',
+    'Патологическая любовь к чужим тапочкам',
+    'Компульсивный сбор на общие нужды',
+    'Амнезия личного графика уборки',
+    'Непереносимость тишины в выходной'
+  ];
+
+  // Список диагнозов перестраивается под режим (solo/family). textContent — безопасно.
+  function buildDiagList(items){
     var list = document.getElementById('diagList');
-    var search = document.getElementById('diagSearch');
     var chosen = document.getElementById('diagChosen');
-    DIAGNOSES.forEach(function(d){
+    list.innerHTML = '';
+    selectedDiag = '';
+    chosen.textContent = '— ничего —';
+    var search = document.getElementById('diagSearch');
+    if (search) search.value = '';
+    items.forEach(function(d){
       var opt = document.createElement('div');
       opt.className = 'diag-option';
       opt.textContent = d;                    // безопасно: textContent
       opt.addEventListener('click', function(){
-        selectedFamilyDiagnosis = d;
+        selectedDiag = d;
         chosen.textContent = d;               // безопасно: textContent
         Array.prototype.forEach.call(list.querySelectorAll('.diag-option'), function(o){
           o.classList.toggle('sel', o === opt);
@@ -1097,7 +1235,13 @@
       });
       list.appendChild(opt);
     });
-    // реверс-поиск: при наборе СОВПАДЕНИЯ скрываются
+  }
+  // дефолт до выбора режима — семейный справочник
+  buildDiagList(DIAGNOSES);
+  // реверс-поиск вешаем один раз: при наборе СОВПАДЕНИЯ скрываются
+  (function(){
+    var search = document.getElementById('diagSearch');
+    var list = document.getElementById('diagList');
     search.addEventListener('input', function(){
       var q = this.value.trim().toLowerCase();
       Array.prototype.forEach.call(list.querySelectorAll('.diag-option'), function(o){
@@ -1124,32 +1268,41 @@
     clearErrs(['err2diag','err2date','err2symp']);
     var ok = true;
 
-    if (!selectedFamilyDiagnosis){ setErr('err2diag','Выберите семейный диагноз из справочника (щёлкните по строке).'); ok = false; }
+    if (!selectedDiag){
+      setErr('err2diag', (mode === 'solo'
+        ? 'Выберите свой диагноз из справочника (щёлкните по строке).'
+        : 'Выберите семейный диагноз из справочника (щёлкните по строке).'));
+      ok = false;
+    }
 
     var birthDate = syncDate();
     if (!ok) return;
 
-    var symptoms = document.getElementById('symptoms').value.trim();   // жалобы семьи — необязательно
+    var symptoms = document.getElementById('symptoms').value.trim();   // жалобы — необязательно
 
-    // дата рождения СТАРШЕГО пациента → people[0].birthDate
+    // дата рождения (solo — пациента, family — старшего) → people[0].birthDate
     if (people[0]) people[0].birthDate = birthDate;
 
-    // --- сохраняем семейный диагноз и состав ---
+    // --- сохраняем диагноз и состав: solo→diagnosis, family→familyDiagnosis ---
     if (window.Palata && Palata.Store && recId){
-      Palata.Store.update(recId, { familyDiagnosis:selectedFamilyDiagnosis, people:people, symptoms:symptoms });
+      var diagPatch = { people:people, symptoms:symptoms };
+      if (mode === 'solo') diagPatch.diagnosis = selectedDiag;
+      else diagPatch.familyDiagnosis = selectedDiag;
+      Palata.Store.update(recId, diagPatch);
     }
 
-    // --- театр: фейк-ошибка («семейная картотека недоступна») + зависание ---
+    // --- театр: фейк-ошибка (картотека недоступна) + зависание ---
     if (window.Palata && Palata.Theater){
       await Palata.Theater.fakeError(
-        'Семейная картотека временно недоступна (заведующий унёс ключ). Ваши данные приняты. Нажмите «Так и быть» для продолжения.',
+        ((mode === 'solo') ? 'Картотека пациента' : 'Семейная картотека') +
+        ' временно недоступна (заведующий унёс ключ). Ваши данные приняты. Нажмите «Так и быть» для продолжения.',
         'Так и быть'
       );
-      await Palata.Theater.freeze({ min:1600, max:2600, messages:[
-        'Согласование семейного диагноза с заведующим отделением…',
-        'Заверяем подпись врача (врач спит)…',
-        'Ищем свободные койки для всей семьи…'
-      ]});
+      await Palata.Theater.freeze({ min:1600, max:2600, messages:
+        (mode === 'solo')
+          ? ['Согласование диагноза с заведующим отделением…', 'Заверяем подпись врача (врач спит)…', 'Ищем свободную койку для вас…']
+          : ['Согласование семейного диагноза с заведующим отделением…', 'Заверяем подпись врача (врач спит)…', 'Ищем свободные койки для всей семьи…']
+      });
     }
     showStep(3);
   });
@@ -1411,20 +1564,40 @@
       row.appendChild(l); row.appendChild(v); body.appendChild(row);
     }
 
+    var solo = (mode === 'solo') || (rec && rec.mode === 'solo');
+
     if (rec){
-      pv('Семейный диагноз:', rec.familyDiagnosis || rec.diagnosis || '—');
+      if (solo) pv('Ваш диагноз:', rec.diagnosis || '—');
+      else      pv('Семейный диагноз:', rec.familyDiagnosis || rec.diagnosis || '—');
       pv('Кто оформлял:', rec.attendee === 'proxy' ? ('по доверенности от ' + (rec.proxyFor || '?')) : 'оформлено лично');
     }
     var ppl = (window.Palata && Palata.Store) ? Palata.Store.peopleOf(rec || {}) : people;
-    if (ppl[0] && ppl[0].birthDate) pv('Дата рожд. старшего:', ppl[0].birthDate);
 
-    var total = 0;
-    ppl.forEach(function(p, i){
-      var n = parseInt(p.amount, 10); if (isNaN(n)) n = 0; total += n;
-      pv((i + 1) + '. ' + (p.fio || '—'), fmtRub(n) + ' ₽');     // label/значение через textContent — безопасно
-    });
-    pv('ИТОГО ПО СЕМЬЕ:', fmtRub(total) + ' ₽');
+    if (solo){
+      // один пациент и его сумма — без «состава семьи»
+      var p0 = ppl[0] || {};
+      if (p0.birthDate) pv('Дата рождения:', p0.birthDate);
+      var n0 = parseInt(p0.amount, 10); if (isNaN(n0)) n0 = 0;
+      pv('Пациент:', p0.fio || '—');                              // textContent — безопасно
+      pv('Сумма к оплате:', fmtRub(n0) + ' ₽');
+    } else {
+      if (ppl[0] && ppl[0].birthDate) pv('Дата рожд. старшего:', ppl[0].birthDate);
+      var total = 0;
+      ppl.forEach(function(p, i){
+        var n = parseInt(p.amount, 10); if (isNaN(n)) n = 0; total += n;
+        pv((i + 1) + '. ' + (p.fio || '—'), fmtRub(n) + ' ₽');     // label/значение через textContent — безопасно
+      });
+      pv('ИТОГО ПО СЕМЬЕ:', fmtRub(total) + ' ₽');
+    }
     if (rec && rec.contact) pv('Связь:', rec.contact);
+
+    // финальный текст под режим
+    var ftEl = document.getElementById('finalText');
+    if (ftEl){
+      ftEl.textContent = solo
+        ? 'Поздравляем! Вы официально оформлены приёмным отделением. Сопротивление бесполезно и зафиксировано в карте. Тапочки выдаются на втором этаже под роспись. Передачи принимаются по чётным. Голоса — по нечётным. Добро пожаловать в коллектив.'
+        : 'Поздравляем! Семья официально оформлена приёмным отделением. Сопротивление бесполезно и зафиксировано в карте. Тапочки выдаются на втором этаже под роспись. Передачи принимаются по чётным. Голоса — по нечётным. Добро пожаловать в коллектив.';
+    }
 
     // САМОЕ ВАЖНОЕ
     if (window.Palata && Palata.Store && recId){
